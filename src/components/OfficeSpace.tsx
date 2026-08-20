@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CHARACTERS, type CartoonCharacter } from '../data/characters';
 import { AI_ENGINES, type AIEngine } from '../data/aiEngines';
-import { Sparkles, Monitor, Coffee, Server, Shield, Plus, Layers, Cpu } from 'lucide-react';
+import { Sparkles, Monitor, Coffee, Server, Shield, Plus, Layers, Cpu, Calendar, CheckCircle2, Clock, Copy, Download, Filter, BarChart3, Terminal } from 'lucide-react';
 import { cartoonAudio } from '../utils/audio';
 import confetti from 'canvas-confetti';
 
@@ -17,6 +17,19 @@ interface WorkingEmployee {
   currentTask: string;
   linesOfCode: number;
   screenOutput: string;
+}
+
+export interface DailyWorkItem {
+  id: string;
+  time: string;
+  agentId: string;
+  agentName: string;
+  task: string;
+  output: string;
+  category: 'Coding' | 'Design' | 'Management' | 'Security' | 'QA' | 'Optimization' | 'Planning';
+  status: 'completed' | 'active' | 'queued';
+  progress: number;
+  loc: number;
 }
 
 export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
@@ -76,16 +89,129 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
 
   const [selectedDeskId, setSelectedDeskId] = useState<string>('jim');
   const [customTaskInput, setCustomTaskInput] = useState<string>('');
+  const [activityTab, setActivityTab] = useState<'daily' | 'live' | 'stats'>('daily');
+  const [selectedAgentFilter, setSelectedAgentFilter] = useState<string>('all');
+  const [copyToast, setCopyToast] = useState<boolean>(false);
+  const [showAddLogModal, setShowAddLogModal] = useState<boolean>(false);
+
+  // New task form state inside Daily Work
+  const [newLogAgent, setNewLogAgent] = useState<string>('jim');
+  const [newLogTask, setNewLogTask] = useState<string>('');
+  const [newLogCategory, setNewLogCategory] = useState<DailyWorkItem['category']>('Coding');
+
   const [activeFloorSpeech, setActiveFloorSpeech] = useState<{ [key: string]: string }>({
     jim: "Antigravity 2.0 typing code...",
     pam: "Claude Code design tokens ready!",
     michael: "Codex orchestrating floor!",
   });
+
   const [floorActivityLog, setFloorActivityLog] = useState<string[]>([
     "🏢 Office Floor active in 100% Local Laptop Sandbox.",
     "👨‍💻 Jim working with Antigravity 2.0 at Desk 1.",
     "🎨 Pam working with Claude Code at Desk 2.",
     "👔 Michael working with Codex at Desk 3.",
+    "⚡ Dwight completed security isolation scan.",
+    "🐱 Angela passed 48 unit tests in Copilot QA."
+  ]);
+
+  // Initial Daily Work List
+  const [dailyWorkList, setDailyWorkList] = useState<DailyWorkItem[]>([
+    {
+      id: 'dw-1',
+      time: '12:35 PM',
+      agentId: 'jim',
+      agentName: 'Jim',
+      task: 'Built Rust & TS Harness CLI Wrapper for local isolation',
+      output: 'PR #147 Merged',
+      category: 'Coding',
+      status: 'completed',
+      progress: 100,
+      loc: 1420
+    },
+    {
+      id: 'dw-2',
+      time: '12:15 PM',
+      agentId: 'pam',
+      agentName: 'Pam',
+      task: 'Designed tokens.json UI color swatches & cartoon layout',
+      output: 'tokens.json exported',
+      category: 'Design',
+      status: 'completed',
+      progress: 100,
+      loc: 850
+    },
+    {
+      id: 'dw-3',
+      time: '11:50 AM',
+      agentId: 'michael',
+      agentName: 'Michael',
+      task: 'Orchestrated multi-agent office floor & memory sync',
+      output: '6 AI Desks Sync OK',
+      category: 'Management',
+      status: 'completed',
+      progress: 100,
+      loc: 3200
+    },
+    {
+      id: 'dw-4',
+      time: '11:20 AM',
+      agentId: 'dwight',
+      agentName: 'Dwight',
+      task: 'Enforced security isolation & key protection scan',
+      output: '0 Security Leaks',
+      category: 'Security',
+      status: 'completed',
+      progress: 100,
+      loc: 2100
+    },
+    {
+      id: 'dw-5',
+      time: '10:45 AM',
+      agentId: 'angela',
+      agentName: 'Angela',
+      task: 'Inspected PR code formatting, TypeScript types & unit tests',
+      output: '48/48 Tests Passed',
+      category: 'QA',
+      status: 'completed',
+      progress: 100,
+      loc: 1100
+    },
+    {
+      id: 'dw-6',
+      time: '10:10 AM',
+      agentId: 'kevin',
+      agentName: 'Kevin',
+      task: 'Optimized token context window & local model caching',
+      output: '420k Tokens Saved',
+      category: 'Optimization',
+      status: 'completed',
+      progress: 100,
+      loc: 640
+    },
+    {
+      id: 'dw-7',
+      time: '09:30 AM',
+      agentId: 'jim',
+      agentName: 'Jim',
+      task: 'Initialized local sandbox environment & dev server',
+      output: 'Port 5173 Active',
+      category: 'Coding',
+      status: 'completed',
+      progress: 100,
+      loc: 350
+    },
+    {
+      id: 'dw-8',
+      time: '09:00 AM',
+      agentId: 'michael',
+      agentName: 'Michael',
+      task: 'Morning standup & daily work plan generation',
+      output: 'Daily Backlog Ready',
+      category: 'Planning',
+      status: 'completed',
+      progress: 100,
+      loc: 180
+    }
   ]);
 
   // Simulate real live typing and work progress at desks
@@ -150,7 +276,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
 
     setFloorActivityLog(prev => [
       `⚡ Switched ${selectedDeskId.toUpperCase()}'s engine to ${engine.name}`,
-      ...prev.slice(0, 5)
+      ...prev.slice(0, 7)
     ]);
   };
 
@@ -160,6 +286,8 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
 
     cartoonAudio.playSuccess();
     const task = customTaskInput.trim();
+    const targetEmp = employees.find(e => e.character.id === selectedDeskId) || employees[0];
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     setEmployees(prev =>
       prev.map(emp => {
@@ -182,60 +310,136 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
 
     setFloorActivityLog(prev => [
       `⚡ Task assigned to ${selectedDeskId.toUpperCase()}: "${task}"`,
-      ...prev.slice(0, 5)
+      ...prev.slice(0, 7)
     ]);
+
+    // Append to Daily Work Log Timeline
+    const newWorkItem: DailyWorkItem = {
+      id: `dw-${Date.now()}`,
+      time: nowTime,
+      agentId: selectedDeskId,
+      agentName: targetEmp.character.name,
+      task: task,
+      output: `Executing in ${targetEmp.aiEngine.name}`,
+      category: 'Coding',
+      status: 'active',
+      progress: 65,
+      loc: Math.floor(Math.random() * 180) + 40
+    };
+    setDailyWorkList(prev => [newWorkItem, ...prev]);
 
     setCustomTaskInput('');
     confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
   };
 
+  const handleAddManualLog = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLogTask.trim()) return;
+
+    cartoonAudio.playSuccess();
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const targetChar = CHARACTERS.find(c => c.id === newLogAgent) || CHARACTERS[0];
+
+    const newItem: DailyWorkItem = {
+      id: `dw-${Date.now()}`,
+      time: nowTime,
+      agentId: newLogAgent,
+      agentName: targetChar.name,
+      task: newLogTask.trim(),
+      output: 'Task Logged to Daily Summary',
+      category: newLogCategory,
+      status: 'completed',
+      progress: 100,
+      loc: Math.floor(Math.random() * 250) + 50
+    };
+
+    setDailyWorkList(prev => [newItem, ...prev]);
+    setNewLogTask('');
+    setShowAddLogModal(false);
+    confetti({ particleCount: 50, spread: 50 });
+  };
+
+  const handleCopyReport = () => {
+    cartoonAudio.playSuccess();
+    const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    let report = `# 📅 DAILY WORK REPORT - ${dateStr}\n\n`;
+    report += `## 📊 Today's Work Summary\n`;
+    report += `- Total Tasks Completed: ${dailyWorkList.length}\n`;
+    report += `- Total Lines of Code Built Today: ${dailyWorkList.reduce((acc, curr) => acc + curr.loc, 0).toLocaleString()} LOC\n`;
+    report += `- Active Agents: 6 Working Desks (Jim, Pam, Michael, Dwight, Angela, Kevin)\n\n`;
+    report += `## 📋 Hourly Task Log Breakdown\n\n`;
+    
+    dailyWorkList.forEach(item => {
+      report += `- **[${item.time}] ${item.agentName}** (${item.category}): ${item.task} ➔ *Output: ${item.output}* [${item.loc} LOC]\n`;
+    });
+    
+    navigator.clipboard.writeText(report);
+    setCopyToast(true);
+    confetti({ particleCount: 60, spread: 60 });
+    setTimeout(() => setCopyToast(false), 3000);
+  };
+
   const selectedEmployee = employees.find(e => e.character.id === selectedDeskId) || employees[0];
+
+  const filteredDailyWork = selectedAgentFilter === 'all'
+    ? dailyWorkList
+    : dailyWorkList.filter(item => item.agentId === selectedAgentFilter);
+
+  const totalLocToday = dailyWorkList.reduce((acc, item) => acc + item.loc, 0);
 
   return (
     <div className="w-full space-y-6">
       
-      {/* Top Banner Control Bar (Clean & Focused on Working Floor) */}
-      <div className="cartoon-card p-5 md:p-6 bg-gradient-to-r from-amber-100 via-sky-100 to-emerald-100 flex flex-wrap items-center justify-between gap-4">
+      {/* Top Banner Control Bar */}
+      <div className="cartoon-card p-5 md:p-6 bg-gradient-to-r from-amber-100 via-sky-100 to-emerald-100 flex flex-wrap items-center justify-between gap-4 border-4 border-slate-900 shadow-[8px_8px_0px_#0f172a]">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="cartoon-badge px-2.5 py-0.5 text-xs bg-amber-400 text-slate-900 rounded-full flex items-center gap-1 font-bold">
+            <span className="cartoon-badge px-2.5 py-0.5 text-xs bg-amber-400 text-slate-900 rounded-full flex items-center gap-1 font-bold border border-slate-900">
               <Sparkles className="w-3.5 h-3.5 text-amber-800" /> Active AI Working Floor
             </span>
-            <span className="text-xs font-mono font-bold text-slate-700">6 Working Desks • Real-Time Execution</span>
+            <span className="text-xs font-mono font-bold text-slate-700">6 Working Desks • Real-Time Daily Execution</span>
           </div>
           <h2 className="font-heading text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
             The Working Cartoon Office 🏢
           </h2>
           <p className="text-xs md:text-sm text-slate-700 font-medium mt-1">
-            Working employees typing at their computer desks! Click any desk to inspect live work & assign tasks.
+            Working employees typing at computer desks! Track daily work, live activity logs & assign tasks.
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => {
-              cartoonAudio.playPop();
-              onOpenHarnessStudio();
-            }}
-            className="cartoon-button-primary px-4 py-2.5 text-xs sm:text-sm flex items-center gap-2"
+            onClick={handleCopyReport}
+            className="cartoon-button-primary px-3.5 py-2 text-xs sm:text-sm flex items-center gap-2 bg-emerald-400 hover:bg-emerald-300 text-slate-900"
           >
-            <Layers className="w-4 h-4" />
-            <span>📋 3 Working Steps & Studio</span>
+            <Copy className="w-4 h-4" />
+            <span>📋 Copy Daily Work Report</span>
           </button>
 
           <button
             onClick={() => {
               cartoonAudio.playPop();
-              onOpenAddAgent();
+              onOpenHarnessStudio();
             }}
-            className="cartoon-button-secondary px-4 py-2.5 text-xs sm:text-sm flex items-center gap-1.5"
+            className="cartoon-button-secondary px-3.5 py-2 text-xs sm:text-sm flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" />
-            <span>Add Working Desk</span>
+            <Layers className="w-4 h-4" />
+            <span>Studio</span>
           </button>
         </div>
       </div>
+
+      {/* Toast Alert for Copying Report */}
+      {copyToast && (
+        <div className="p-3 bg-emerald-500 text-slate-950 font-heading font-extrabold text-xs sm:text-sm rounded-xl border-3 border-slate-900 shadow-[4px_4px_0px_#0f172a] animate-bounce flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-slate-900" />
+            <span>Daily Work Report copied to clipboard in Markdown format! 📋</span>
+          </span>
+          <span className="text-xs font-mono underline">Ready to share</span>
+        </div>
+      )}
 
       {/* Main Office Space Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -286,7 +490,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                 <div
                   key={emp.character.id}
                   onClick={() => handleSelectDesk(emp)}
-                  className={`cartoon-card p-3.5 cursor-pointer transition-all relative flex flex-col justify-between ${
+                  className={`cartoon-card p-3.5 cursor-pointer transition-all relative flex flex-col justify-between border-3 border-slate-900 ${
                     isSelected
                       ? `${emp.character.bgColor} ring-4 ring-slate-900 -translate-y-1 shadow-[8px_8px_0px_#0f172a]`
                       : 'bg-white hover:bg-slate-50'
@@ -328,16 +532,13 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
 
                     {/* Sitting Cartoon Employee & Ergonomic Office Chair */}
                     <div className="flex items-center justify-center gap-2 relative">
-                      {/* Ergonomic Chair Backrest */}
                       <div className="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-slate-900 absolute -z-0 top-1 shadow-[2px_2px_0px_#0f172a]" />
 
-                      {/* Sitting Employee Cartoon Avatar */}
                       <div
                         className="w-12 h-12 rounded-xl border-2 border-slate-900 bg-white overflow-hidden relative z-10 animate-float"
                         dangerouslySetInnerHTML={{ __html: emp.character.avatarSvg }}
                       />
 
-                      {/* Keyboard & Typing Animation */}
                       <div className="w-12 h-3 bg-slate-300 border border-slate-900 rounded flex items-center justify-center text-[7px] font-mono font-bold text-slate-700 animate-pulse">
                         ⌨️ TYPING
                       </div>
@@ -362,26 +563,252 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
             })}
           </div>
 
-          {/* Live Office Floor Activity Log */}
-          <div className="mt-5 p-3 bg-slate-900 text-emerald-400 rounded-xl border-2 border-slate-900 font-mono text-xs shadow-[3px_3px_0px_#0f172a]">
-            <div className="flex justify-between items-center text-slate-400 text-[10px] font-bold uppercase mb-1 border-b border-slate-700 pb-1">
-              <span>LIVE FLOOR ACTIVITY LOG</span>
-              <span>WORKING ENGINES</span>
+          {/* 🌟 DEDICATED DAILY WORK & LIVE ACTIVITY CENTER 🌟 */}
+          <div className="mt-6 cartoon-card bg-slate-900 text-white rounded-2xl border-4 border-slate-900 overflow-hidden shadow-[6px_6px_0px_#0f172a]">
+            
+            {/* Header Tabs Navigation */}
+            <div className="p-3 bg-slate-950 border-b-2 border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActivityTab('daily')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-heading font-extrabold flex items-center gap-1.5 transition-all border ${
+                    activityTab === 'daily'
+                      ? 'bg-amber-400 text-slate-900 border-slate-900 shadow-[2px_2px_0px_#f59e0b]'
+                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>📅 DAILY WORK REPORT</span>
+                  <span className="px-1.5 py-0.2 text-[9px] bg-slate-900 text-amber-300 rounded font-mono">
+                    {dailyWorkList.length}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActivityTab('live')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-heading font-extrabold flex items-center gap-1.5 transition-all border ${
+                    activityTab === 'live'
+                      ? 'bg-emerald-400 text-slate-900 border-slate-900 shadow-[2px_2px_0px_#10b981]'
+                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                  }`}
+                >
+                  <Terminal className="w-3.5 h-3.5" />
+                  <span>⚡ LIVE TICKER LOGS</span>
+                </button>
+
+                <button
+                  onClick={() => setActivityTab('stats')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-heading font-extrabold flex items-center gap-1.5 transition-all border ${
+                    activityTab === 'stats'
+                      ? 'bg-sky-400 text-slate-900 border-slate-900 shadow-[2px_2px_0px_#0284c7]'
+                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                  }`}
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span>📊 WORK METRICS</span>
+                </button>
+              </div>
+
+              {/* Agent Filter & Add Button */}
+              <div className="flex items-center gap-2">
+                {activityTab === 'daily' && (
+                  <>
+                    <div className="flex items-center gap-1 bg-slate-800 px-2 py-1 rounded border border-slate-700 text-xs">
+                      <Filter className="w-3 h-3 text-amber-400" />
+                      <select
+                        value={selectedAgentFilter}
+                        onChange={(e) => setSelectedAgentFilter(e.target.value)}
+                        className="bg-transparent text-slate-200 font-mono text-[11px] focus:outline-none cursor-pointer"
+                      >
+                        <option value="all" className="bg-slate-900 text-white">All Employees</option>
+                        {CHARACTERS.map(c => (
+                          <option key={c.id} value={c.id} className="bg-slate-900 text-white">
+                            {c.name} ({c.role})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={() => setShowAddLogModal(true)}
+                      className="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-slate-900 text-xs font-bold rounded border border-slate-900 flex items-center gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Log Task</span>
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="space-y-1">
-              {floorActivityLog.map((log, idx) => (
-                <p key={idx} className="truncate">
-                  {log}
-                </p>
-              ))}
-            </div>
+
+            {/* TAB 1: DAILY WORK REPORT */}
+            {activityTab === 'daily' && (
+              <div className="p-4 space-y-4">
+                
+                {/* Summary Banner Stats Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-slate-900 font-mono">
+                  <div className="p-2.5 bg-amber-100 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                    <div className="text-[10px] font-bold uppercase text-slate-700">TOTAL TASKS TODAY</div>
+                    <div className="text-lg font-heading font-extrabold text-slate-900">{dailyWorkList.length} Completed</div>
+                  </div>
+
+                  <div className="p-2.5 bg-emerald-100 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                    <div className="text-[10px] font-bold uppercase text-slate-700">CODE GENERATED</div>
+                    <div className="text-lg font-heading font-extrabold text-emerald-900">{totalLocToday.toLocaleString()} LOC</div>
+                  </div>
+
+                  <div className="p-2.5 bg-sky-100 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                    <div className="text-[10px] font-bold uppercase text-slate-700">TOKENS SAVED</div>
+                    <div className="text-lg font-heading font-extrabold text-sky-900">420,000 Saved</div>
+                  </div>
+
+                  <div className="p-2.5 bg-pink-100 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                    <div className="text-[10px] font-bold uppercase text-slate-700">SECURITY AUDIT</div>
+                    <div className="text-lg font-heading font-extrabold text-pink-900">100% Passed</div>
+                  </div>
+                </div>
+
+                {/* Overall Daily Task Execution Progress Bar */}
+                <div className="p-3 bg-slate-950 rounded-xl border-2 border-slate-800 space-y-1.5">
+                  <div className="flex justify-between items-center text-xs font-heading font-extrabold text-amber-300">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      OVERALL DAILY TASK EXECUTION PROGRESS
+                    </span>
+                    <span className="font-mono text-emerald-400 text-xs">
+                      {Math.round((dailyWorkList.filter(d => d.status === 'completed').length / dailyWorkList.length) * 100)}% Complete ({dailyWorkList.filter(d => d.status === 'completed').length}/{dailyWorkList.length} Tasks)
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-slate-700 p-0.5">
+                    <div
+                      className="bg-gradient-to-r from-emerald-500 to-amber-400 h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                      style={{ width: `${(dailyWorkList.filter(d => d.status === 'completed').length / dailyWorkList.length) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Daily Work Timeline Items */}
+                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                  {filteredDailyWork.map((item) => {
+                    const char = CHARACTERS.find(c => c.id === item.agentId) || CHARACTERS[0];
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-3 bg-slate-950 rounded-xl border-2 border-slate-800 flex items-center justify-between gap-3 text-xs hover:border-slate-700 transition-colors"
+                      >
+                        {/* Left Side: Avatar + Agent Info + Task Description */}
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          {/* Agent Avatar Badge */}
+                          <div
+                            className="w-9 h-9 rounded-lg bg-amber-300 border border-slate-900 overflow-hidden shrink-0"
+                            dangerouslySetInnerHTML={{ __html: char.avatarSvg }}
+                          />
+                          
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-heading font-extrabold text-amber-300 shrink-0">{item.agentName}</span>
+                              <span className="px-2 py-0.2 text-[9px] font-mono font-bold bg-slate-800 text-slate-300 rounded border border-slate-700 shrink-0">
+                                {item.category}
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1 shrink-0">
+                                <Clock className="w-3 h-3 text-slate-500" /> {item.time}
+                              </span>
+                            </div>
+                            
+                            <p className="font-medium text-slate-200 text-xs mt-0.5 truncate" title={item.task}>
+                              {item.task}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Right Side: Fixed Width Columns for LOC, Progress Meter, & Status Badge */}
+                        <div className="flex items-center gap-3 shrink-0">
+                          {/* LOC Badge */}
+                          <div className="w-20 text-center text-[10px] font-mono text-emerald-400 bg-slate-900 px-2 py-1 rounded border border-slate-800 shrink-0">
+                            + {item.loc} LOC
+                          </div>
+
+                          {/* Task Progress Bar */}
+                          <div className="w-28 text-left shrink-0">
+                            <div className="flex justify-between text-[9px] font-mono text-slate-400 mb-0.5">
+                              <span>Progress</span>
+                              <span className="text-emerald-400 font-bold">{item.progress}%</span>
+                            </div>
+                            <div className="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden border border-slate-800">
+                              <div
+                                className={`h-full rounded-full transition-all ${item.status === 'completed' ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`}
+                                style={{ width: `${item.progress}%` }}
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* Output Status Badge */}
+                          <div className="w-36 flex justify-end shrink-0">
+                            <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full border flex items-center gap-1 w-full justify-center ${
+                              item.status === 'completed'
+                                ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
+                                : 'bg-amber-950 text-amber-300 border-amber-700 animate-pulse'
+                            }`}>
+                              <CheckCircle2 className="w-3 h-3 shrink-0" />
+                              <span className="truncate">{item.output}</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 2: LIVE TICKER LOGS */}
+            {activityTab === 'live' && (
+              <div className="p-4 font-mono text-xs text-emerald-400 space-y-1.5 max-h-72 overflow-y-auto">
+                <div className="flex justify-between text-slate-400 text-[10px] font-bold uppercase pb-1 mb-2 border-b border-slate-800">
+                  <span>TERMINAL STREAM</span>
+                  <span>LOCAL SANDBOX PROCESS</span>
+                </div>
+                {floorActivityLog.map((log, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="text-slate-500 text-[10px]">&gt;</span>
+                    <span className="truncate">{log}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* TAB 3: WORK METRICS & AGENT STATS */}
+            {activityTab === 'stats' && (
+              <div className="p-4 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {CHARACTERS.map(c => {
+                    const empLoc = employees.find(e => e.character.id === c.id)?.linesOfCode || 1000;
+                    return (
+                      <div key={c.id} className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-lg bg-slate-800 border border-slate-700 overflow-hidden shrink-0"
+                          dangerouslySetInnerHTML={{ __html: c.avatarSvg }}
+                        />
+                        <div className="truncate">
+                          <div className="font-heading font-extrabold text-amber-400 text-xs truncate">{c.name}</div>
+                          <div className="text-[10px] text-slate-400 truncate">{c.role}</div>
+                          <div className="text-[10px] font-mono text-emerald-400 font-bold mt-0.5">{empLoc.toLocaleString()} LOC Produced</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
           </div>
 
         </div>
 
         {/* Right Side: Selected Employee Workstation Screen Inspector (4 cols) */}
         <div className="lg:col-span-4 flex flex-col justify-between">
-          <div className="cartoon-card p-5 bg-white flex flex-col justify-between relative overflow-hidden h-full">
+          <div className="cartoon-card p-5 bg-white flex flex-col justify-between relative overflow-hidden h-full border-4 border-slate-900 shadow-[8px_8px_0px_#0f172a]">
             
             {/* Selected Desk Banner */}
             <div>
@@ -467,15 +894,12 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
               </form>
             </div>
 
-            {/* Studio Button */}
+            {/* Copy Report Quick Action */}
             <button
-              onClick={() => {
-                cartoonAudio.playPop();
-                onOpenHarnessStudio();
-              }}
-              className="cartoon-button-secondary w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2"
+              onClick={handleCopyReport}
+              className="cartoon-button-secondary w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2 bg-amber-300 hover:bg-amber-200 text-slate-900"
             >
-              <span>View Full 3-Step Harness Studio 📋</span>
+              <span>📋 Copy Full Daily Work Report</span>
             </button>
 
           </div>
@@ -483,6 +907,87 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
 
       </div>
 
+      {/* QUICK ADD MANUAL LOG MODAL */}
+      {showAddLogModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="cartoon-card bg-white max-w-md w-full p-6 border-4 border-slate-900 shadow-[8px_8px_0px_#0f172a] rounded-2xl relative">
+            <h3 className="font-heading text-xl font-extrabold text-slate-900 mb-1">
+              Log Daily Work Task 📝
+            </h3>
+            <p className="text-xs text-slate-600 font-medium mb-4">
+              Add a completed or ongoing task to today's daily work breakdown.
+            </p>
+
+            <form onSubmit={handleAddManualLog} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-900 mb-1 uppercase">
+                  Select Employee / Agent:
+                </label>
+                <select
+                  value={newLogAgent}
+                  onChange={(e) => setNewLogAgent(e.target.value)}
+                  className="w-full text-xs font-bold p-2 bg-slate-50 border-2 border-slate-900 rounded-lg"
+                >
+                  {CHARACTERS.map(c => (
+                    <option key={c.id} value={c.id}>{c.name} ({c.role})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-900 mb-1 uppercase">
+                  Category:
+                </label>
+                <select
+                  value={newLogCategory}
+                  onChange={(e) => setNewLogCategory(e.target.value as DailyWorkItem['category'])}
+                  className="w-full text-xs font-bold p-2 bg-slate-50 border-2 border-slate-900 rounded-lg"
+                >
+                  <option value="Coding">Coding</option>
+                  <option value="Design">Design</option>
+                  <option value="Management">Management</option>
+                  <option value="Security">Security</option>
+                  <option value="QA">QA</option>
+                  <option value="Optimization">Optimization</option>
+                  <option value="Planning">Planning</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-900 mb-1 uppercase">
+                  Task Description:
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newLogTask}
+                  onChange={(e) => setNewLogTask(e.target.value)}
+                  placeholder="e.g. Generated API documentation & unit tests"
+                  className="w-full text-xs p-2 bg-slate-50 border-2 border-slate-900 rounded-lg"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddLogModal(false)}
+                  className="px-4 py-2 text-xs font-bold bg-slate-200 text-slate-800 rounded-lg border-2 border-slate-900"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="cartoon-button-primary px-4 py-2 text-xs font-bold"
+                >
+                  Save Daily Log
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
+
