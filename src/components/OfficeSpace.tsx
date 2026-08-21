@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { CHARACTERS, type CartoonCharacter } from '../data/characters';
 import { AI_ENGINES, type AIEngine } from '../data/aiEngines';
-import { Sparkles, Monitor, Coffee, Server, Shield, Plus, Layers, Cpu, Calendar, CheckCircle2, Clock, Copy, Filter, BarChart3, Terminal } from 'lucide-react';
+import { Sparkles, Monitor, Coffee, Server, Shield, Plus, Layers, Cpu, Calendar, CheckCircle2, Clock, Copy, Filter, BarChart3, Terminal, FileText } from 'lucide-react';
 import { cartoonAudio } from '../utils/audio';
 import confetti from 'canvas-confetti';
+import { generateExecutivePdfReport } from '../utils/pdfExporter';
 
 interface OfficeSpaceProps {
   onOpenHarnessStudio: () => void;
@@ -422,6 +423,9 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
 
   const workerEmployees = employees.filter(e => e.character.id !== managerEmployee.character.id);
 
+  // State for Manager Task Dispatcher
+  const [dispatchWorkerId, setDispatchWorkerId] = useState<string>('all');
+
   const handleManagerBroadcast = () => {
     cartoonAudio.playSuccess();
     const directive = prompt("Enter Manager Directive / Floor Announcement:", "All hands on deck! Ship feature PRs & pass QA unit tests!");
@@ -439,6 +443,179 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
     ]);
 
     confetti({ particleCount: 90, spread: 75, origin: { y: 0.4 } });
+  };
+
+  const handleManagerDispatchWork = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customTaskInput.trim()) return;
+
+    cartoonAudio.playSuccess();
+    const task = customTaskInput.trim();
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (dispatchWorkerId === 'all') {
+      // Assign to all workers
+      setEmployees(prev =>
+        prev.map(emp => {
+          if (emp.character.id === managerEmployee.character.id) {
+            return {
+              ...emp,
+              currentTask: `Supervising All Workers on: "${task}"`,
+              screenOutput: `[MANAGER DISPATCHER]\n> Dispatched task to ALL ${workerEmployees.length} Workers\n> Task: "${task}"\n> Status: Monitoring workforce & compiling reports for Boss.`
+            };
+          } else {
+            return {
+              ...emp,
+              currentTask: task,
+              status: 'typing',
+              screenOutput: `[${emp.aiEngine.name.toUpperCase()}]\n> TASK FROM MANAGER (${managerEmployee.character.name}): ${task}\n> Executing with ${emp.aiEngine.defaultModel}...`
+            };
+          }
+        })
+      );
+
+      const newSpeech: { [key: string]: string } = {};
+      employees.forEach(emp => {
+        if (emp.character.id === managerEmployee.character.id) {
+          newSpeech[emp.character.id] = `👑 Assigned "${task.slice(0, 20)}..." to all!`;
+        } else {
+          newSpeech[emp.character.id] = `🫡 Working on Manager's task!`;
+        }
+      });
+      setActiveFloorSpeech(newSpeech);
+
+      setFloorActivityLog(prev => [
+        `👑 MANAGER DISPATCHED TASK TO ALL WORKERS: "${task}"`,
+        ...prev.slice(0, 7)
+      ]);
+
+      // Log daily work items for workers
+      const newItems: DailyWorkItem[] = workerEmployees.map(w => ({
+        id: `dw-${Date.now()}-${w.character.id}`,
+        time: nowTime,
+        agentId: w.character.id,
+        agentName: w.character.name,
+        task: task,
+        output: `Dispatched by Manager ${managerEmployee.character.name}`,
+        category: 'Coding',
+        status: 'active',
+        progress: 75,
+        loc: Math.floor(Math.random() * 200) + 50
+      }));
+      setDailyWorkList(prev => [...newItems, ...prev]);
+
+    } else {
+      // Assign to specific worker
+      const targetWorker = employees.find(e => e.character.id === dispatchWorkerId);
+      if (!targetWorker) return;
+
+      setEmployees(prev =>
+        prev.map(emp => {
+          if (emp.character.id === dispatchWorkerId) {
+            return {
+              ...emp,
+              currentTask: task,
+              status: 'typing',
+              screenOutput: `[${emp.aiEngine.name.toUpperCase()}]\n> DIRECTIVE FROM MANAGER: ${task}\n> Model: ${emp.aiEngine.defaultModel}`
+            };
+          }
+          if (emp.character.id === managerEmployee.character.id) {
+            return {
+              ...emp,
+              currentTask: `Supervising ${targetWorker.character.name} on: "${task}"`,
+              screenOutput: `[MANAGER DISPATCHER]\n> Assigned task to ${targetWorker.character.name}\n> Task: "${task}"\n> Status: Awaiting completion report.`
+            };
+          }
+          return emp;
+        })
+      );
+
+      setActiveFloorSpeech(prev => ({
+        ...prev,
+        [managerEmployee.character.id]: `👑 Assigned task to ${targetWorker.character.name}!`,
+        [targetWorker.character.id]: `🫡 On it, Manager!`
+      }));
+
+      setFloorActivityLog(prev => [
+        `👑 MANAGER DISPATCHED TASK TO ${targetWorker.character.name.toUpperCase()}: "${task}"`,
+        ...prev.slice(0, 7)
+      ]);
+
+      const newItem: DailyWorkItem = {
+        id: `dw-${Date.now()}`,
+        time: nowTime,
+        agentId: targetWorker.character.id,
+        agentName: targetWorker.character.name,
+        task: task,
+        output: `Assigned by Manager ${managerEmployee.character.name}`,
+        category: 'Coding',
+        status: 'active',
+        progress: 80,
+        loc: Math.floor(Math.random() * 200) + 60
+      };
+      setDailyWorkList(prev => [newItem, ...prev]);
+    }
+
+    setCustomTaskInput('');
+    confetti({ particleCount: 80, spread: 70, origin: { y: 0.5 } });
+  };
+
+  const handleManagerCollectReport = () => {
+    cartoonAudio.playSuccess();
+    const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    let report = `# 👑 MANAGER EXECUTIVE BRIEFING REPORT FOR YOU (BOSS)\n`;
+    report += `*Generated by Manager ${managerEmployee.character.name} at ${nowTime} on ${dateStr}*\n\n`;
+    report += `---\n\n`;
+    report += `## 📊 Executive Workforce Summary\n`;
+    report += `- **Total Active Workforce**: ${workerEmployees.length} Worker Agents\n`;
+    report += `- **Total Tasks Supervised & Executed**: ${dailyWorkList.length} Tasks\n`;
+    report += `- **Total Code Built Across Floor**: ${dailyWorkList.reduce((acc, curr) => acc + curr.loc, 0).toLocaleString()} Lines of Code\n`;
+    report += `- **Manager Supervision Status**: 100% Active (All Key Leaks Prevented)\n\n`;
+    report += `## 👨‍💻 Worker Agents Work Breakdown Report\n\n`;
+
+    employees.forEach(emp => {
+      if (emp.character.id !== managerEmployee.character.id) {
+        report += `### 📌 ${emp.character.name} (${emp.character.title})\n`;
+        report += `- **AI Engine Powering Desk**: ${emp.aiEngine.name} (${emp.aiEngine.provider})\n`;
+        report += `- **Active Task**: ${emp.currentTask}\n`;
+        report += `- **Total Code Output**: ${emp.linesOfCode.toLocaleString()} LOC\n`;
+        report += `- **Status**: ${emp.status.toUpperCase()}\n\n`;
+      }
+    });
+
+    report += `## 📋 Complete Daily Tasks Log Collected By Manager\n\n`;
+    dailyWorkList.forEach(item => {
+      report += `- **[${item.time}] ${item.agentName}**: ${item.task} ➔ *Result: ${item.output}* [${item.loc} LOC]\n`;
+    });
+
+    report += `\n---\n*Manager Directive: All reports verified and ready for Boss review! 👑*`;
+
+    navigator.clipboard.writeText(report);
+    setCopyToast(true);
+
+    setActiveFloorSpeech(prev => ({
+      ...prev,
+      [managerEmployee.character.id]: `👑 Boss, I collected all work reports for you! 📋`
+    }));
+
+    setFloorActivityLog(prev => [
+      `📋 MANAGER ${managerEmployee.character.name.toUpperCase()} COLLECTED ALL WORK REPORTS & DELIVERED TO BOSS!`,
+      ...prev.slice(0, 7)
+    ]);
+
+    confetti({ particleCount: 110, spread: 90, origin: { y: 0.4 } });
+    setTimeout(() => setCopyToast(false), 3500);
+  };
+
+  const handleExportPdf = () => {
+    cartoonAudio.playSuccess();
+    generateExecutivePdfReport(managerEmployee.character.name, employees, dailyWorkList);
+    setFloorActivityLog(prev => [
+      `📄 GENERATED EXECUTIVE PDF WORK REPORT FOR BOSS!`,
+      ...prev.slice(0, 7)
+    ]);
   };
 
   const selectedEmployee = employees.find(e => e.character.id === selectedDeskId) || employees[0];
@@ -470,7 +647,15 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <button
+            onClick={handleExportPdf}
+            className="cartoon-button-primary px-3.5 py-2 text-xs sm:text-sm flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-900 shadow-[3px_3px_0px_#0f172a] border-2 border-slate-900"
+          >
+            <FileText className="w-4 h-4 text-slate-900" />
+            <span>📄 Export Executive PDF</span>
+          </button>
+
           <button
             onClick={handleCopyReport}
             className="cartoon-button-primary px-3.5 py-2 text-xs sm:text-sm flex items-center gap-2 bg-emerald-400 hover:bg-emerald-300 text-slate-900"
@@ -566,13 +751,23 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                 </div>
               </div>
 
-              {/* Broadcast Directive Button */}
-              <button
-                onClick={handleManagerBroadcast}
-                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 text-xs font-bold font-heading rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center gap-1.5 transition-transform active:scale-95"
-              >
-                📢 Broadcast Directive
-              </button>
+              {/* Manager Executive Suite Header Actions */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportPdf}
+                  className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-900 text-xs font-extrabold font-heading rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center gap-1.5 transition-transform active:scale-95"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Export PDF Report</span>
+                </button>
+
+                <button
+                  onClick={handleManagerBroadcast}
+                  className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 text-xs font-bold font-heading rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center gap-1.5 transition-transform active:scale-95"
+                >
+                  📢 Broadcast Directive
+                </button>
+              </div>
             </div>
 
             {/* Manager Desk Card */}
@@ -1021,7 +1216,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
         <div className="lg:col-span-4 flex flex-col justify-between">
           <div className="cartoon-card p-5 bg-white flex flex-col justify-between relative overflow-hidden h-full border-4 border-slate-900 shadow-[8px_8px_0px_#0f172a]">
             
-            {/* Selected Desk Banner */}
+            {/* Right Side: Selected Employee Workstation Screen Inspector (4 cols) */}
             <div>
               <div className="flex items-center gap-3 pb-3 mb-3 border-b-2 border-slate-900">
                 <div
@@ -1029,9 +1224,12 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                   dangerouslySetInnerHTML={{ __html: selectedEmployee.character.avatarSvg }}
                 />
                 <div>
-                  <h3 className="font-heading text-lg font-extrabold text-slate-900">
-                    {selectedEmployee.character.name}'s Desk
-                  </h3>
+                  <div className="flex items-center gap-1">
+                    <h3 className="font-heading text-lg font-extrabold text-slate-900">
+                      {selectedEmployee.character.name}'s Desk
+                    </h3>
+                    {selectedEmployee.character.id === managerEmployee.character.id && <span className="text-sm">👑</span>}
+                  </div>
                   <p className="text-xs font-bold text-amber-600 uppercase">
                     {selectedEmployee.character.title}
                   </p>
@@ -1082,36 +1280,97 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                 </div>
               </div>
 
-              {/* Assign Task Form to Sitting Employee */}
-              <form onSubmit={handleAssignTask} className="bg-slate-50 p-3 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-4">
-                <label className="block text-xs font-bold text-slate-900 mb-1 uppercase font-heading">
-                  Assign Task to {selectedEmployee.character.name}:
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={customTaskInput}
-                    onChange={(e) => setCustomTaskInput(e.target.value)}
-                    placeholder="e.g. 'Build login UI' or 'Run security scan'"
-                    className="w-full text-xs font-medium px-2.5 py-1.5 bg-white border border-slate-900 rounded-lg focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    className="cartoon-button-primary px-3 py-1.5 text-xs shrink-0"
-                  >
-                    Assign
-                  </button>
-                </div>
-              </form>
+              {/* MANAGER SPECIFIC DISPATCH FORM VS WORKER TASK FORM */}
+              {selectedEmployee.character.id === managerEmployee.character.id ? (
+                /* 👑 MANAGER TASK DISPATCHER FORM 👑 */
+                <form onSubmit={handleManagerDispatchWork} className="bg-amber-100 p-3.5 rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] mb-4 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-extrabold text-slate-900 font-heading uppercase flex items-center gap-1">
+                      <span>👑 MANAGER TASK DISPATCHER</span>
+                    </label>
+                    <span className="text-[9px] font-bold bg-amber-400 px-2 py-0.5 rounded border border-slate-900">
+                      Dispatches Work to Floor
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-800 uppercase mb-0.5">Select Worker Agent Target:</label>
+                    <select
+                      value={dispatchWorkerId}
+                      onChange={(e) => setDispatchWorkerId(e.target.value)}
+                      className="w-full text-xs font-bold p-1.5 bg-white border border-slate-900 rounded-lg focus:outline-none"
+                    >
+                      <option value="all">📢 ALL WORKERS (Floor Wide Dispatch)</option>
+                      {workerEmployees.map(w => (
+                        <option key={w.character.id} value={w.character.id}>
+                          👨‍💻 {w.character.name} ({w.character.title})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-800 uppercase mb-0.5">Directive / Work Task:</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        required
+                        value={customTaskInput}
+                        onChange={(e) => setCustomTaskInput(e.target.value)}
+                        placeholder="e.g. 'Build billing system & write unit tests'"
+                        className="w-full text-xs font-medium px-2.5 py-1.5 bg-white border border-slate-900 rounded-lg focus:outline-none"
+                      />
+                      <button
+                        type="submit"
+                        className="cartoon-button-primary px-3 py-1.5 text-xs shrink-0 bg-slate-900 text-amber-300 hover:bg-slate-800 font-extrabold"
+                      >
+                        🎯 Dispatch
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              ) : (
+                /* STANDARD WORKER TASK FORM */
+                <form onSubmit={handleAssignTask} className="bg-slate-50 p-3 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-4">
+                  <label className="block text-xs font-bold text-slate-900 mb-1 uppercase font-heading">
+                    Assign Direct Task to {selectedEmployee.character.name}:
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={customTaskInput}
+                      onChange={(e) => setCustomTaskInput(e.target.value)}
+                      placeholder="e.g. 'Build login UI' or 'Run security scan'"
+                      className="w-full text-xs font-medium px-2.5 py-1.5 bg-white border border-slate-900 rounded-lg focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      className="cartoon-button-primary px-3 py-1.5 text-xs shrink-0"
+                    >
+                      Assign
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
 
-            {/* Copy Report Quick Action */}
-            <button
-              onClick={handleCopyReport}
-              className="cartoon-button-secondary w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2 bg-amber-300 hover:bg-amber-200 text-slate-900"
-            >
-              <span>📋 Copy Full Daily Work Report</span>
-            </button>
+            {/* MANAGER WORK REPORT HANDOFF BUTTONS TO BOSS (USER) */}
+            <div className="space-y-2">
+              <button
+                onClick={handleExportPdf}
+                className="cartoon-button-primary w-full py-3 text-xs font-extrabold flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-900 shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900"
+              >
+                <FileText className="w-4 h-4 text-slate-900" />
+                <span>👑 Export Manager PDF Report for Boss (You) 📄</span>
+              </button>
+              
+              <button
+                onClick={handleManagerCollectReport}
+                className="cartoon-button-secondary w-full py-2 text-xs font-bold flex items-center justify-center gap-2 bg-emerald-300 hover:bg-emerald-200 text-slate-900 border-2 border-slate-900"
+              >
+                <span>📋 Copy Markdown Briefing to Clipboard</span>
+              </button>
+            </div>
 
           </div>
         </div>
