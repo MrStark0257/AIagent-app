@@ -78,6 +78,8 @@ export function App() {
     setActiveTab('crm');
   };
 
+  const [isAutoHunting, setIsAutoHunting] = useState<boolean>(true);
+
   return (
     <div className="min-h-screen bg-grid-dots bg-[#f6f8fd] text-slate-900 flex flex-col font-['Outfit',sans-serif]">
       
@@ -100,6 +102,8 @@ export function App() {
             onOpenHarnessStudio={() => setIsStudioModalOpen(true)}
             onOpenAddAgent={() => setIsAddModalOpen(true)}
             newlyAddedEmployee={newlyAddedAgent}
+            isAutoHunting={isAutoHunting}
+            onToggleAutoHunting={(val) => setIsAutoHunting(val)}
           />
         )}
 
@@ -109,6 +113,8 @@ export function App() {
             onAuditLead={handleAuditLead}
             onGenerateOutreach={handleGenerateOutreach}
             onAddToPipeline={handleAddToPipeline}
+            isAutoHunting={isAutoHunting}
+            onToggleAutoHunting={(val) => setIsAutoHunting(val)}
           />
         )}
 

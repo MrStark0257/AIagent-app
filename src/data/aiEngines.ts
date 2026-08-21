@@ -9,9 +9,22 @@ export interface AIEngine {
   speed: string;
   badgeBg: string;
   textColor: string;
+  isManagerOnly?: boolean;
 }
 
 export const AI_ENGINES: AIEngine[] = [
+  {
+    id: 'director-ai',
+    name: 'Director AI (Antigravity 2.0 Ultra)',
+    provider: 'Google DeepMind',
+    logoText: '👑',
+    tagline: 'Zero-latency multi-agent orchestration & executive task dispatching (👑 Manager Only)',
+    defaultModel: 'Antigravity 2.0 Ultra Executive Engine',
+    speed: '120 t/s (Instant Zero-Delay)',
+    badgeBg: 'bg-amber-200 border-amber-600',
+    textColor: 'text-amber-950',
+    isManagerOnly: true,
+  },
   {
     id: 'claude-code',
     name: 'Claude Code',

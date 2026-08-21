@@ -58,6 +58,13 @@ export const AIEnginesBar: React.FC<AIEnginesBarProps> = ({
                 {engine.name}
               </span>
 
+              {/* Manager Only Badge */}
+              {engine.isManagerOnly && (
+                <span className="text-[8px] font-extrabold font-heading bg-amber-400 text-slate-900 px-1 rounded border border-slate-900 shadow-[1px_1px_0px_#0f172a] mb-0.5">
+                  👑 Manager
+                </span>
+              )}
+
               {/* Active Indicator Dot */}
               {isSelected && (
                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-emerald-400 border-2 border-slate-900 rounded-full flex items-center justify-center text-[8px] font-bold text-slate-900">

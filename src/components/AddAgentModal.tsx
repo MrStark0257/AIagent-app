@@ -34,9 +34,10 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState<CartoonCharacter | 'custom'>(availableCharacters[0] || CHARACTERS[0]);
   const [name, setName] = useState('');
   const [title, setTitle] = useState('');
-  const [role, setRole] = useState('Harness Developer');
+  const [role, setRole] = useState('Client Communications & Operations');
   const [quote, setQuote] = useState('');
-  const [selectedEngineId, setSelectedEngineId] = useState<string>(AI_ENGINES[0].id);
+  const workerEngines = AI_ENGINES.filter((e) => !e.isManagerOnly);
+  const [selectedEngineId, setSelectedEngineId] = useState<string>(workerEngines[0]?.id || 'claude-code');
 
   // Custom Avatar Builder state
   const [customEmoji, setCustomEmoji] = useState('🚀');
@@ -296,7 +297,7 @@ export const AddAgentModal: React.FC<AddAgentModalProps> = ({
                 onChange={(e) => setSelectedEngineId(e.target.value)}
                 className="w-full text-xs font-bold font-mono px-3 py-2 bg-amber-50 border-2 border-slate-900 rounded-xl focus:outline-none cursor-pointer"
               >
-                {AI_ENGINES.map((eng) => (
+                {workerEngines.map((eng) => (
                   <option key={eng.id} value={eng.id}>
                     {eng.logoText} {eng.name} ({eng.defaultModel}) — {eng.provider}
                   </option>

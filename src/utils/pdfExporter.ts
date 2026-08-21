@@ -8,7 +8,7 @@ export interface DailyWorkItem {
   agentName: string;
   task: string;
   output: string;
-  category: 'Coding' | 'Design' | 'Management' | 'Security' | 'QA' | 'Optimization' | 'Planning';
+  category: 'Management' | 'Mailing' | 'BizDev' | 'Research' | 'Content' | 'Operations' | 'Planning';
   status: 'completed' | 'active' | 'queued';
   progress: number;
   loc: number;

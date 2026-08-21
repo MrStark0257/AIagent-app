@@ -254,7 +254,7 @@ export const StepTwoCommandCenter: React.FC<StepTwoCommandCenterProps> = ({
                 value={newFact}
                 onChange={(e) => setNewFact(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddFact()}
-                placeholder="Add new durable fact (e.g. 'PRs require unit tests + Pam approval')..."
+                placeholder="Add new durable fact (e.g. 'Enterprise proposals require Manager approval')..."
                 className="w-full text-xs font-mono bg-white px-3 py-2 border-2 border-slate-900 rounded-xl focus:outline-none"
               />
               <button

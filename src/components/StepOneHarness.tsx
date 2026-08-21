@@ -200,17 +200,25 @@ export const StepOneHarness: React.FC<StepOneHarnessProps> = ({
               </h3>
             </div>
             
-            <select
-              value={engineId}
-              onChange={(e) => setEngineId(e.target.value)}
-              className="w-full px-3 py-2 bg-white border-2 border-slate-900 rounded-xl font-bold text-xs text-slate-900 focus:outline-none shadow-[2px_2px_0px_#0f172a]"
-            >
-              {AI_ENGINES.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.logoText} {e.name} ({e.provider}) — {e.defaultModel}
-                </option>
-              ))}
-            </select>
+            {(() => {
+              const isManagerCharacter = activeCharacter.id === 'michael' || 
+                activeCharacter.role.toLowerCase().includes('manager') || 
+                activeCharacter.title.toLowerCase().includes('director');
+              const enginesToDisplay = AI_ENGINES.filter((e) => isManagerCharacter || !e.isManagerOnly);
+              return (
+                <select
+                  value={engineId}
+                  onChange={(e) => setEngineId(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border-2 border-slate-900 rounded-xl font-bold text-xs text-slate-900 focus:outline-none shadow-[2px_2px_0px_#0f172a]"
+                >
+                  {enginesToDisplay.map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.logoText} {e.name} ({e.provider}) — {e.defaultModel}
+                    </option>
+                  ))}
+                </select>
+              );
+            })()}
 
             <p className="mt-1.5 text-[11px] font-mono text-slate-600">
               ⚡ Selected: <strong className="text-slate-900">{currentEngine.name}</strong> • Speed: {currentEngine.speed}

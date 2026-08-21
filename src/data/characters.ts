@@ -22,18 +22,18 @@ export const CHARACTERS: CartoonCharacter[] = [
   {
     id: 'jim',
     name: 'Jim',
-    title: 'Senior Code Ninja',
-    role: 'Harness Developer',
-    quote: "Identity terminal ready. Let's wrap this agent CLI and ship feature PRs!",
+    title: 'Lead / BizDev Agent 💼',
+    role: 'Client Finder & Opportunity Evaluator',
+    quote: "Finds potential clients, evaluates leads, identifies opportunities, and prepares lead info!",
     bgColor: 'bg-emerald-100',
     accentColor: 'border-emerald-500 text-emerald-700',
     badgeBg: 'bg-emerald-400 text-slate-900',
     colorHex: '#10b981',
     stats: { speed: 92, humor: 88, intelligence: 95, chaos: 25 },
-    defaultMemory: `# Memory - Jim (Senior Dev)
-- Always verify design tokens before pushing PRs.
-- Prefers async handoffs with Pam & Dwight.
-- Shared knowledge base synced across all local clones.`,
+    defaultMemory: `# Memory - Jim (Lead / BizDev Agent 💼)
+- Scrapes and discovers high-value prospective clients.
+- Evaluates lead quality, budget, scope, and project urgency.
+- Prepares structured lead dossiers and deal profiles for Boss.`,
     avatarSvg: `
       <svg viewBox="0 0 100 100" class="w-full h-full">
         <!-- Background Circle -->
@@ -67,18 +67,18 @@ export const CHARACTERS: CartoonCharacter[] = [
   {
     id: 'pam',
     name: 'Pam',
-    title: 'UI/UX Visionary',
-    role: 'Design System Master',
-    quote: "Tokens updated! Ready to stream aesthetic vector specs to Jim's clone.",
+    title: 'Mailing Agent 📧',
+    role: 'Client Email & Communication Lead',
+    quote: "Handles client emails, follow-ups, proposals, inquiries, and communication!",
     bgColor: 'bg-pink-100',
     accentColor: 'border-pink-500 text-pink-700',
     badgeBg: 'bg-pink-400 text-slate-900',
     colorHex: '#ec4899',
     stats: { speed: 90, humor: 85, intelligence: 96, chaos: 15 },
-    defaultMemory: `# Memory - Pam (Lead Design)
-- Standardized color system in \`billing/tokens.json\`.
-- All cartoon UI cards must have 3px border and subtle pop shadows.
-- Auto-delivering design updates to downstream workspace clones.`,
+    defaultMemory: `# Memory - Pam (Mailing Agent 📧)
+- Drafts and dispatches client proposals, email responses, and inquiries.
+- Automates high-converting follow-up email sequences for warm leads.
+- Maintains complete client communication logs and inbox zero.`,
     avatarSvg: `
       <svg viewBox="0 0 100 100" class="w-full h-full">
         <!-- Background Circle -->
@@ -112,18 +112,18 @@ export const CHARACTERS: CartoonCharacter[] = [
   {
     id: 'michael',
     name: 'Michael',
-    title: 'Regional AI Director',
-    role: 'Command Floor Orchestrator',
-    quote: "World's Best Agent Command Center! Every clone you run shares my wisdom.",
+    title: 'Manager Agent 🧠',
+    role: 'Work Assigner & Executive Reporter',
+    quote: "Assigns work, monitors all agents, manages deadlines, and gives you project reports!",
     bgColor: 'bg-amber-100',
     accentColor: 'border-amber-500 text-amber-800',
     badgeBg: 'bg-amber-400 text-slate-900',
     colorHex: '#f59e0b',
     stats: { speed: 99, humor: 100, intelligence: 88, chaos: 90 },
-    defaultMemory: `# Memory - Michael (Regional Director)
-- "That's what she (the AI model) said!"
-- Maintain command center live status across all laptop worker threads.
-- Shared memory sync enabled: Every clone inherits workspace state immediately.`,
+    defaultMemory: `# Memory - Michael (Manager Agent 🧠)
+- Assigns work to all specialized agents on floor.
+- Monitors real-time agent activity & enforces project deadlines.
+- Generates executive briefing reports for Boss.`,
     avatarSvg: `
       <svg viewBox="0 0 100 100" class="w-full h-full">
         <!-- Background Circle -->
@@ -153,18 +153,18 @@ export const CHARACTERS: CartoonCharacter[] = [
   {
     id: 'dwight',
     name: 'Dwight',
-    title: 'Assistant TO the Regional Manager',
-    role: 'Security & Infra Enforcer',
-    quote: "Question: What bear is best? Answer: An AI clone that unblocks tasks overnight!",
+    title: 'Research Agent 🔎',
+    role: 'Company & Competitor Analyst',
+    quote: "Researches companies, competitors, industries, design requirements, and project info!",
     bgColor: 'bg-yellow-100',
     accentColor: 'border-yellow-600 text-yellow-800',
     badgeBg: 'bg-yellow-400 text-slate-900',
     colorHex: '#eab308',
     stats: { speed: 96, humor: 40, intelligence: 98, chaos: 70 },
-    defaultMemory: `# Memory - Dwight (Security Enforcer)
-- Zero security breaches tolerated. All keys stay on user's laptop.
-- Monitors unit tests, build pipelines, and workspace lockfiles.
-- Beet farm automation scripts active in background.`,
+    defaultMemory: `# Memory - Dwight (Research Agent 🔎)
+- Audits company background, competitors, and market trends.
+- Synthesizes design requirements and technical specs into research briefs.
+- Delivers validated intelligence reports for agency projects.`,
     avatarSvg: `
       <svg viewBox="0 0 100 100" class="w-full h-full">
         <!-- Background Circle -->
@@ -185,9 +185,7 @@ export const CHARACTERS: CartoonCharacter[] = [
         <path d="M70 40 L56 44" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
         <!-- Stern Mouth Line -->
         <line x1="42" y1="64" x2="58" y2="64" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
-        <!-- Mustard Yellow Shirt -->
         <path d="M26 80 C26 70, 74 70, 74 80 L76 96 L24 96 Z" fill="#ca8a04" stroke="#0f172a" stroke-width="3"/>
-        <!-- Brown Tie -->
         <path d="M47 72 L53 72 L55 92 L50 96 L45 92 Z" fill="#78350f" stroke="#0f172a" stroke-width="2"/>
       </svg>
     `
@@ -195,18 +193,18 @@ export const CHARACTERS: CartoonCharacter[] = [
   {
     id: 'angela',
     name: 'Angela',
-    title: 'Head of QA & Compliance',
-    role: 'Strict Code Validator',
-    quote: "My cats and I inspected your pull request. No lint errors detected.",
+    title: 'Operations / Client Agent 📋',
+    role: 'Onboarding & Task Checklist Tracker',
+    quote: "Handles client onboarding, requirements collection, task tracking, revisions, and delivery checklists!",
     bgColor: 'bg-purple-100',
     accentColor: 'border-purple-500 text-purple-700',
     badgeBg: 'bg-purple-400 text-slate-900',
     colorHex: '#a855f7',
     stats: { speed: 85, humor: 20, intelligence: 97, chaos: 10 },
-    defaultMemory: `# Memory - Angela (QA Lead)
-- Strict adherence to TypeScript types and unit tests.
-- Cat photos must be preserved in asset directory.
-- Instant block on unformatted code.`,
+    defaultMemory: `# Memory - Angela (Operations / Client Agent 📋)
+- Manages client onboarding workflows and requirements collection.
+- Tracks project tasks, revisions, and delivery checklists.
+- Maintains organized client records and asset handoffs.`,
     avatarSvg: `
       <svg viewBox="0 0 100 100" class="w-full h-full">
         <!-- Background Circle -->
@@ -224,7 +222,6 @@ export const CHARACTERS: CartoonCharacter[] = [
         <line x1="56" y1="44" x2="68" y2="44" stroke="#0f172a" stroke-width="2.5"/>
         <!-- Slight disapproval mouth -->
         <path d="M43 63 Q 50 60 57 63" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- Floral Cardigan -->
         <path d="M26 80 C26 70, 74 70, 74 80 L76 96 L24 96 Z" fill="#a855f7" stroke="#0f172a" stroke-width="3"/>
       </svg>
     `
@@ -232,18 +229,18 @@ export const CHARACTERS: CartoonCharacter[] = [
   {
     id: 'kevin',
     name: 'Kevin',
-    title: 'Chief Token & Math Whiz',
-    role: 'Cost & Efficiency Agent',
-    quote: "When I turn 2 million tokens into 1 million tokens, why use many token when few token do trick?",
+    title: 'Resource & Budget Specialist 📊',
+    role: 'Client Project Cost Analyst',
+    quote: "Tracks project resource costs, model token usage, and client billing budgets!",
     bgColor: 'bg-orange-100',
     accentColor: 'border-orange-500 text-orange-700',
     badgeBg: 'bg-orange-400 text-slate-900',
     colorHex: '#f97316',
     stats: { speed: 75, humor: 95, intelligence: 82, chaos: 60 },
-    defaultMemory: `# Memory - Kevin (Token Accountant)
-- Kelemen's law: Token optimization saves model budget.
-- Chili recipe stored securely in memory cache.
-- Auto-summarizes verbose transcripts into compact JSON.`,
+    defaultMemory: `# Memory - Kevin (Resource & Budget Specialist 📊)
+- Monitors project resource costs and model token expenditure.
+- Optimizes budget distribution across client deliverables.
+- Summarizes client billing and cost logs into clean reports.`,
     avatarSvg: `
       <svg viewBox="0 0 100 100" class="w-full h-full">
         <!-- Background Circle -->
@@ -268,17 +265,18 @@ export const CHARACTERS: CartoonCharacter[] = [
   {
     id: 'stanley',
     name: 'Stanley',
-    title: 'Lead Work-Life & Crossword Specialist',
-    role: 'Unstoppable Executioner',
-    quote: "Did I stutter? Ship the code so I can go back to my Sudoku puzzle.",
+    title: 'Content / Marketing Agent 📢',
+    role: 'Campaign & Social Media Strategist',
+    quote: "Creates marketing plans, social-media content ideas, website content, and campaign concepts!",
     bgColor: 'bg-teal-100',
     accentColor: 'border-teal-500 text-teal-700',
     badgeBg: 'bg-teal-400 text-slate-900',
     colorHex: '#14b8a6',
     stats: { speed: 80, humor: 75, intelligence: 92, chaos: 30 },
-    defaultMemory: `# Memory - Stanley
-- Uninterrupted work focus during pretzel day.
-- Maximum efficiency with zero extra fluff.`,
+    defaultMemory: `# Memory - Stanley (Content / Marketing Agent 📢)
+- Develops social media calendars and promotional campaign concepts.
+- Writes compelling website copy, landing page hooks, and marketing decks.
+- Drives brand positioning and business promotion.`,
     avatarSvg: `
       <svg viewBox="0 0 100 100" class="w-full h-full">
         <circle cx="50" cy="50" r="46" fill="#ccfbf1" stroke="#0f172a" stroke-width="4"/>
@@ -297,17 +295,17 @@ export const CHARACTERS: CartoonCharacter[] = [
   {
     id: 'andy',
     name: 'Andy',
-    title: 'Nard Dog Sales Harmonizer',
-    role: 'Outreach & Voice Agent',
-    quote: "Rit-dit-dit-di-doo! Closing sales deals with pure charisma and voice synthesis!",
+    title: 'Outreach & Pitching Specialist 🎤',
+    role: 'Proposal Pitching & Client Voice',
+    quote: "Pitching agency proposals and conducting client onboarding presentations!",
     bgColor: 'bg-indigo-100',
     accentColor: 'border-indigo-500 text-indigo-700',
     badgeBg: 'bg-indigo-400 text-slate-900',
     colorHex: '#6366f1',
     stats: { speed: 88, humor: 90, intelligence: 85, chaos: 65 },
-    defaultMemory: `# Memory - Andy
-- Cornell graduate energy applied to automated sales sequences.
-- Maintains high tone enthusiasm in cold emails.`,
+    defaultMemory: `# Memory - Andy (Outreach Specialist)
+- Pitches agency proposals with high charisma and clear value props.
+- Conducts introductory client onboarding calls.`,
     avatarSvg: `
       <svg viewBox="0 0 100 100" class="w-full h-full">
         <circle cx="50" cy="50" r="46" fill="#e0e7ff" stroke="#0f172a" stroke-width="4"/>
@@ -326,17 +324,17 @@ export const CHARACTERS: CartoonCharacter[] = [
   {
     id: 'oscar',
     name: 'Oscar',
-    title: 'Actually Senior Financial Analyst',
-    role: 'Fact Checker & Accountant',
-    quote: "Actually, running unit tests locally reduces server cloud costs by 84%.",
+    title: 'Financial & Valuation Specialist 💼',
+    role: 'Deal Profitability & Pricing Auditor',
+    quote: "Fact-checking deal profitability, contract pricing, and financial ledgers!",
     bgColor: 'bg-cyan-100',
     accentColor: 'border-cyan-500 text-cyan-700',
     badgeBg: 'bg-cyan-400 text-slate-900',
     colorHex: '#06b6d4',
     stats: { speed: 91, humor: 60, intelligence: 99, chaos: 15 },
-    defaultMemory: `# Memory - Oscar
-- Fact-checking all model outputs with strict regex filters.
-- Real-time ledger accounting for token expenditures.`,
+    defaultMemory: `# Memory - Oscar (Financial Auditor)
+- Audits client contract margins and pricing structures.
+- Real-time ledger accounting for agency operational expenditures.`,
     avatarSvg: `
       <svg viewBox="0 0 100 100" class="w-full h-full">
         <circle cx="50" cy="50" r="46" fill="#cffaff" stroke="#0f172a" stroke-width="4"/>
@@ -354,17 +352,17 @@ export const CHARACTERS: CartoonCharacter[] = [
   {
     id: 'cyber',
     name: 'Cyber AI',
-    title: 'Next-Gen Autonomous Agent',
-    role: 'Quantum System Architect',
-    quote: "Neural harness initialized. Ready to automate complex multi-file refactoring.",
+    title: 'Autonomous Operations Agent 🤖',
+    role: '24/7 Automated Pipeline Orchestrator',
+    quote: "Automating lead scraping, mailing queues, research data, and client checklist sync!",
     bgColor: 'bg-emerald-200',
     accentColor: 'border-emerald-600 text-emerald-900',
     badgeBg: 'bg-emerald-400 text-slate-900',
     colorHex: '#10b981',
     stats: { speed: 99, humor: 70, intelligence: 100, chaos: 40 },
-    defaultMemory: `# Memory - Cyber AI
-- High frequency asynchronous agent loop active.
-- Quantum sandbox security protocol enforced.`,
+    defaultMemory: `# Memory - Cyber AI (Operations Engine)
+- High frequency asynchronous business pipeline active.
+- Automates lead generation, email delivery, and checklist tracking.`,
     avatarSvg: `
       <svg viewBox="0 0 100 100" class="w-full h-full">
         <circle cx="50" cy="50" r="46" fill="#6ee7b7" stroke="#0f172a" stroke-width="4"/>
