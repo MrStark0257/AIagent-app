@@ -20,6 +20,10 @@ export function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isStudioModalOpen, setIsStudioModalOpen] = useState<boolean>(false);
 
+  // Dynamic Agents state
+  const [charactersList, setCharactersList] = useState<CartoonCharacter[]>(CHARACTERS);
+  const [newlyAddedAgent, setNewlyAddedAgent] = useState<{ character: CartoonCharacter; aiEngine?: any } | null>(null);
+
   // Active state objects across modules
   const [pipelineLeads, setPipelineLeads] = useState<Lead[]>(INITIAL_LEADS);
   const [selectedLead, setSelectedLead] = useState<Lead | undefined>(INITIAL_LEADS[0]);
@@ -28,8 +32,9 @@ export function App() {
   );
   const [activeOutreach, setActiveOutreach] = useState<GeneratedOutreach | undefined>();
 
-  const handleAddCharacter = (newChar: CartoonCharacter) => {
-    CHARACTERS.unshift(newChar);
+  const handleAddCharacter = (newChar: CartoonCharacter, initialEngine?: any) => {
+    setCharactersList((prev) => [newChar, ...prev]);
+    setNewlyAddedAgent({ character: newChar, aiEngine: initialEngine });
   };
 
   const handleAuditLead = (lead: Lead) => {
@@ -94,6 +99,7 @@ export function App() {
           <OfficeSpace
             onOpenHarnessStudio={() => setIsStudioModalOpen(true)}
             onOpenAddAgent={() => setIsAddModalOpen(true)}
+            newlyAddedEmployee={newlyAddedAgent}
           />
         )}
 
@@ -160,6 +166,7 @@ export function App() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddCharacter={handleAddCharacter}
+        availableCharacters={charactersList}
       />
 
       {/* Platform Footer */}

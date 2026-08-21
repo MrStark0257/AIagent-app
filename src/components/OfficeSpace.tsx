@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { CHARACTERS, type CartoonCharacter } from '../data/characters';
 import { AI_ENGINES, type AIEngine } from '../data/aiEngines';
-import { Sparkles, Monitor, Coffee, Server, Shield, Plus, Layers, Cpu, Calendar, CheckCircle2, Clock, Copy, Download, Filter, BarChart3, Terminal } from 'lucide-react';
+import { Sparkles, Monitor, Coffee, Server, Shield, Plus, Layers, Cpu, Calendar, CheckCircle2, Clock, Copy, Filter, BarChart3, Terminal } from 'lucide-react';
 import { cartoonAudio } from '../utils/audio';
 import confetti from 'canvas-confetti';
 
 interface OfficeSpaceProps {
   onOpenHarnessStudio: () => void;
   onOpenAddAgent: () => void;
+  newlyAddedEmployee?: { character: CartoonCharacter; aiEngine?: AIEngine } | null;
 }
 
 interface WorkingEmployee {
@@ -35,6 +36,7 @@ export interface DailyWorkItem {
 export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
   onOpenHarnessStudio,
   onOpenAddAgent,
+  newlyAddedEmployee,
 }) => {
   const [employees, setEmployees] = useState<WorkingEmployee[]>([
     {
@@ -113,6 +115,38 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
     "⚡ Dwight completed security isolation scan.",
     "🐱 Angela passed 48 unit tests in Copilot QA."
   ]);
+
+  // Dynamically add newly created agent harnesses to office floor
+  useEffect(() => {
+    if (newlyAddedEmployee && newlyAddedEmployee.character) {
+      const newChar = newlyAddedEmployee.character;
+      const engine = newlyAddedEmployee.aiEngine || AI_ENGINES[0];
+      const newEmp: WorkingEmployee = {
+        character: newChar,
+        aiEngine: engine,
+        status: 'typing',
+        currentTask: newChar.quote || 'Autonomous task execution initialized',
+        linesOfCode: Math.floor(Math.random() * 500) + 200,
+        screenOutput: `[${engine.name.toUpperCase()} AGENT INITIALIZED]\nState: ACTIVE • Isolated Local Harness\nRole: ${newChar.role}`
+      };
+
+      setEmployees(prev => {
+        if (prev.some(e => e.character.id === newChar.id)) return prev;
+        return [...prev, newEmp];
+      });
+
+      setSelectedDeskId(newChar.id);
+      setActiveFloorSpeech(prev => ({
+        ...prev,
+        [newChar.id]: `Agent ${newChar.name} online! 🚀`
+      }));
+
+      setFloorActivityLog(prev => [
+        `✨ Spun up new agent harness desk: ${newChar.name} (${newChar.role})`,
+        ...prev.slice(0, 7)
+      ]);
+    }
+  }, [newlyAddedEmployee]);
 
   // Initial Daily Work List
   const [dailyWorkList, setDailyWorkList] = useState<DailyWorkItem[]>([
@@ -379,6 +413,34 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
     setTimeout(() => setCopyToast(false), 3000);
   };
 
+  const managerEmployee = employees.find(e =>
+    e.character.id === 'michael' ||
+    e.character.role.toLowerCase().includes('manager') ||
+    e.character.role.toLowerCase().includes('director') ||
+    e.character.title.toLowerCase().includes('director')
+  ) || employees[0];
+
+  const workerEmployees = employees.filter(e => e.character.id !== managerEmployee.character.id);
+
+  const handleManagerBroadcast = () => {
+    cartoonAudio.playSuccess();
+    const directive = prompt("Enter Manager Directive / Floor Announcement:", "All hands on deck! Ship feature PRs & pass QA unit tests!");
+    if (!directive || !directive.trim()) return;
+
+    const newSpeech: { [key: string]: string } = {};
+    employees.forEach(emp => {
+      newSpeech[emp.character.id] = `📢 Director: "${directive.trim().slice(0, 26)}..."`;
+    });
+    setActiveFloorSpeech(newSpeech);
+
+    setFloorActivityLog(prev => [
+      `📢 MANAGER DIRECTIVE BROADCAST: "${directive.trim()}"`,
+      ...prev.slice(0, 7)
+    ]);
+
+    confetti({ particleCount: 90, spread: 75, origin: { y: 0.4 } });
+  };
+
   const selectedEmployee = employees.find(e => e.character.id === selectedDeskId) || employees[0];
 
   const filteredDailyWork = selectedAgentFilter === 'all'
@@ -397,13 +459,13 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
             <span className="cartoon-badge px-2.5 py-0.5 text-xs bg-amber-400 text-slate-900 rounded-full flex items-center gap-1 font-bold border border-slate-900">
               <Sparkles className="w-3.5 h-3.5 text-amber-800" /> Active AI Working Floor
             </span>
-            <span className="text-xs font-mono font-bold text-slate-700">6 Working Desks • Real-Time Daily Execution</span>
+            <span className="text-xs font-mono font-bold text-slate-700">{employees.length} Working Desks (1 Manager Suite + {workerEmployees.length} Workers)</span>
           </div>
           <h2 className="font-heading text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
             The Working Cartoon Office 🏢
           </h2>
           <p className="text-xs md:text-sm text-slate-700 font-medium mt-1">
-            Working employees typing at computer desks! Track daily work, live activity logs & assign tasks.
+            Dedicated Manager Executive Desk + Worker Agent Desks! Track daily work, live activity logs & assign tasks.
           </p>
         </div>
 
@@ -457,7 +519,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
               <Server className="w-5 h-5 text-emerald-600 animate-pulse" />
               <div>
                 <div className="font-heading font-extrabold text-[11px] uppercase">ACTIVE ENGINE RACK</div>
-                <div className="text-[9px] font-mono text-emerald-700">6 Working AI Containers</div>
+                <div className="text-[9px] font-mono text-emerald-700">{employees.length} Working AI Containers</div>
               </div>
             </div>
 
@@ -480,9 +542,122 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
             </div>
           </div>
 
-          {/* 6 Cartoon Computer Desks & Working Employees Grid */}
-          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-            {employees.map((emp, index) => {
+          {/* 👑 SEPARATE DEDICATED MANAGER'S EXECUTIVE COMMAND SUITE DESK 👑 */}
+          <div className="relative z-10 mb-6 cartoon-card bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300 p-4 border-3 border-slate-900 shadow-[6px_6px_0px_#0f172a] rounded-2xl">
+            
+            {/* Manager Suite Header */}
+            <div className="flex flex-wrap justify-between items-center gap-2 pb-2.5 mb-3 border-b-2 border-slate-900">
+              <div className="flex items-center gap-2">
+                <span className="w-9 h-9 rounded-xl bg-amber-400 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center font-bold text-xl animate-bounce">
+                  👑
+                </span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-heading font-extrabold text-sm md:text-base text-slate-900 uppercase tracking-wide">
+                      MANAGER'S EXECUTIVE COMMAND SUITE 🏢
+                    </h3>
+                    <span className="cartoon-badge px-2.5 py-0.5 text-[10px] bg-slate-900 text-amber-300 rounded-full font-mono font-bold">
+                      EXECUTIVE DESK • SEPARATE ROOM
+                    </span>
+                  </div>
+                  <p className="text-[10px] md:text-xs text-slate-700 font-medium">
+                    Command deck for floor orchestration, AI engine routing & broadcast directives
+                  </p>
+                </div>
+              </div>
+
+              {/* Broadcast Directive Button */}
+              <button
+                onClick={handleManagerBroadcast}
+                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 text-xs font-bold font-heading rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center gap-1.5 transition-transform active:scale-95"
+              >
+                📢 Broadcast Directive
+              </button>
+            </div>
+
+            {/* Manager Desk Card */}
+            <div
+              onClick={() => handleSelectDesk(managerEmployee)}
+              className={`cartoon-card p-3.5 cursor-pointer transition-all border-3 border-slate-900 rounded-xl ${
+                selectedDeskId === managerEmployee.character.id
+                  ? 'bg-amber-100 ring-4 ring-slate-900 -translate-y-0.5 shadow-[6px_6px_0px_#0f172a]'
+                  : 'bg-white hover:bg-amber-50 shadow-[3px_3px_0px_#0f172a]'
+              }`}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                
+                {/* Left: Manager Avatar & Title (4 cols) */}
+                <div className="md:col-span-4 flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-400 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] overflow-hidden shrink-0 relative animate-float">
+                    <div dangerouslySetInnerHTML={{ __html: managerEmployee.character.avatarSvg }} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <h4 className="font-heading font-extrabold text-base text-slate-900">
+                        {managerEmployee.character.name}
+                      </h4>
+                      <span className="text-xs">👑</span>
+                    </div>
+                    <p className="text-[11px] font-bold text-amber-800 uppercase font-heading">
+                      {managerEmployee.character.title}
+                    </p>
+                    <span className="font-mono text-[9px] font-bold px-2 py-0.5 bg-amber-300 border border-slate-900 rounded-full text-slate-900 mt-1 inline-block">
+                      {managerEmployee.aiEngine.logoText} {managerEmployee.aiEngine.name}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Center: Live Executive Screen Output (5 cols) */}
+                <div className="md:col-span-5 bg-slate-900 rounded-xl p-2.5 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] font-mono text-xs text-emerald-400">
+                  <div className="flex justify-between text-[8px] text-slate-400 pb-1 mb-1 border-b border-slate-800">
+                    <span className="text-amber-400 font-bold">🖥️ DIRECTOR EXECUTIVE SCREEN</span>
+                    <span className="text-emerald-400 font-bold">{managerEmployee.linesOfCode} LOC</span>
+                  </div>
+                  <p className="text-[9px] text-amber-300 font-bold truncate">
+                    &gt; Task: {managerEmployee.currentTask}
+                  </p>
+                  <p className="text-[9px] text-emerald-400 truncate mt-0.5">
+                    &gt; {managerEmployee.screenOutput.split('\n')[0]}
+                  </p>
+                </div>
+
+                {/* Right: Speech & Action (3 cols) */}
+                <div className="md:col-span-3 text-right space-y-1.5">
+                  <div className="speech-bubble-left px-2.5 py-1 text-[10px] font-bold text-slate-900 animate-bounce inline-block text-left">
+                    "{activeFloorSpeech[managerEmployee.character.id] || managerEmployee.character.quote.slice(0, 35) + "..."}"
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectDesk(managerEmployee);
+                    }}
+                    className="w-full py-1 text-[11px] font-extrabold font-heading bg-amber-400 hover:bg-amber-300 text-slate-900 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a]"
+                  >
+                    Select Manager Desk ⚙️
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          {/* 💻 WORKER AGENTS DESKS FLOOR SECTION 💻 */}
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h4 className="font-heading font-extrabold text-xs md:text-sm text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <span>💻 WORKER AGENT DESKS FLOOR</span>
+              <span className="text-xs font-mono font-bold bg-amber-300 text-slate-900 px-2.5 py-0.5 rounded-full border border-slate-900">
+                {workerEmployees.length} Worker Desks
+              </span>
+            </h4>
+            <span className="text-[10px] text-slate-600 font-medium hidden sm:inline">
+              Click desk to inspect monitor output & assign task
+            </span>
+          </div>
+
+          {/* Cartoon Computer Desks & Working Employees Grid */}
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {workerEmployees.map((emp, index) => {
               const isSelected = selectedDeskId === emp.character.id;
               const speech = activeFloorSpeech[emp.character.id];
 
@@ -561,6 +736,42 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                 </div>
               );
             })}
+
+            {/* Interactive Add Custom Agent Tile */}
+            <div
+              onClick={() => {
+                cartoonAudio.playPop();
+                onOpenAddAgent();
+              }}
+              className="cartoon-card p-3.5 cursor-pointer transition-all relative flex flex-col justify-between border-3 border-dashed border-slate-900 bg-amber-50 hover:bg-amber-100 min-h-[220px] group shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-heading text-[10px] font-extrabold px-2 py-0.5 bg-amber-400 text-slate-900 rounded border border-slate-900">
+                  NEW DESK +
+                </span>
+                <span className="font-mono text-[9px] font-bold px-2 py-0.5 bg-white border border-slate-900 rounded-full text-slate-900">
+                  Unlimited
+                </span>
+              </div>
+
+              <div className="bg-white/80 p-3 rounded-xl border-2 border-dashed border-slate-900 text-center my-auto flex flex-col items-center justify-center py-5">
+                <div className="w-12 h-12 rounded-2xl bg-amber-400 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition-transform mb-2">
+                  ✨
+                </div>
+                <h4 className="font-heading font-extrabold text-xs text-slate-900">
+                  + Add Custom Agent
+                </h4>
+                <p className="text-[9px] text-slate-600 font-medium mt-1">
+                  Choose avatar & AI engine
+                </p>
+              </div>
+
+              <div className="mt-2 text-center">
+                <span className="text-[10px] font-extrabold text-amber-900 font-heading bg-amber-300 px-3 py-1 rounded-full border border-slate-900">
+                  + Spin Up Harness
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* 🌟 DEDICATED DAILY WORK & LIVE ACTIVITY CENTER 🌟 */}

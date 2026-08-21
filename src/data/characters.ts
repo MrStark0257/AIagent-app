@@ -264,5 +264,121 @@ export const CHARACTERS: CartoonCharacter[] = [
         <path d="M47 75 L53 75 L55 96 L45 96 Z" fill="#ea580c" stroke="#0f172a" stroke-width="2"/>
       </svg>
     `
+  },
+  {
+    id: 'stanley',
+    name: 'Stanley',
+    title: 'Lead Work-Life & Crossword Specialist',
+    role: 'Unstoppable Executioner',
+    quote: "Did I stutter? Ship the code so I can go back to my Sudoku puzzle.",
+    bgColor: 'bg-teal-100',
+    accentColor: 'border-teal-500 text-teal-700',
+    badgeBg: 'bg-teal-400 text-slate-900',
+    colorHex: '#14b8a6',
+    stats: { speed: 80, humor: 75, intelligence: 92, chaos: 30 },
+    defaultMemory: `# Memory - Stanley
+- Uninterrupted work focus during pretzel day.
+- Maximum efficiency with zero extra fluff.`,
+    avatarSvg: `
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <circle cx="50" cy="50" r="46" fill="#ccfbf1" stroke="#0f172a" stroke-width="4"/>
+        <path d="M25 42 C25 24, 75 24, 75 42 Z" fill="#334155" stroke="#0f172a" stroke-width="3"/>
+        <circle cx="50" cy="54" r="28" fill="#d97706" stroke="#0f172a" stroke-width="3"/>
+        <ellipse cx="38" cy="50" rx="4" ry="3" fill="#0f172a"/>
+        <ellipse cx="62" cy="50" rx="4" ry="3" fill="#0f172a"/>
+        <path d="M30 42 L44 45" stroke="#0f172a" stroke-width="3"/>
+        <path d="M70 42 L56 45" stroke="#0f172a" stroke-width="3"/>
+        <line x1="40" y1="64" x2="60" y2="64" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+        <path d="M24 82 C24 72, 76 72, 76 82 L78 96 L22 96 Z" fill="#0f766e" stroke="#0f172a" stroke-width="3"/>
+        <path d="M47 75 L53 75 L55 96 L45 96 Z" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/>
+      </svg>
+    `
+  },
+  {
+    id: 'andy',
+    name: 'Andy',
+    title: 'Nard Dog Sales Harmonizer',
+    role: 'Outreach & Voice Agent',
+    quote: "Rit-dit-dit-di-doo! Closing sales deals with pure charisma and voice synthesis!",
+    bgColor: 'bg-indigo-100',
+    accentColor: 'border-indigo-500 text-indigo-700',
+    badgeBg: 'bg-indigo-400 text-slate-900',
+    colorHex: '#6366f1',
+    stats: { speed: 88, humor: 90, intelligence: 85, chaos: 65 },
+    defaultMemory: `# Memory - Andy
+- Cornell graduate energy applied to automated sales sequences.
+- Maintains high tone enthusiasm in cold emails.`,
+    avatarSvg: `
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <circle cx="50" cy="50" r="46" fill="#e0e7ff" stroke="#0f172a" stroke-width="4"/>
+        <path d="M25 45 C25 22, 75 22, 75 45 Q 60 30 50 35 Q 40 30 25 45" fill="#9a3412" stroke="#0f172a" stroke-width="3"/>
+        <circle cx="50" cy="54" r="27" fill="#fde047" stroke="#0f172a" stroke-width="3"/>
+        <circle cx="38" cy="50" r="4" fill="#0f172a"/>
+        <circle cx="62" cy="50" r="4" fill="#0f172a"/>
+        <circle cx="39" cy="48" r="1.5" fill="#ffffff"/>
+        <circle cx="63" cy="48" r="1.5" fill="#ffffff"/>
+        <path d="M38 60 Q 50 72 62 60 Z" fill="#0f172a" stroke="#0f172a" stroke-width="2"/>
+        <path d="M24 80 C24 70, 76 70, 76 80 L78 96 L22 96 Z" fill="#4338ca" stroke="#0f172a" stroke-width="3"/>
+        <path d="M47 74 L53 74 L55 96 L45 96 Z" fill="#38bdf8" stroke="#0f172a" stroke-width="2"/>
+      </svg>
+    `
+  },
+  {
+    id: 'oscar',
+    name: 'Oscar',
+    title: 'Actually Senior Financial Analyst',
+    role: 'Fact Checker & Accountant',
+    quote: "Actually, running unit tests locally reduces server cloud costs by 84%.",
+    bgColor: 'bg-cyan-100',
+    accentColor: 'border-cyan-500 text-cyan-700',
+    badgeBg: 'bg-cyan-400 text-slate-900',
+    colorHex: '#06b6d4',
+    stats: { speed: 91, humor: 60, intelligence: 99, chaos: 15 },
+    defaultMemory: `# Memory - Oscar
+- Fact-checking all model outputs with strict regex filters.
+- Real-time ledger accounting for token expenditures.`,
+    avatarSvg: `
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <circle cx="50" cy="50" r="46" fill="#cffaff" stroke="#0f172a" stroke-width="4"/>
+        <path d="M25 42 C25 20, 75 20, 75 42 Z" fill="#1e293b" stroke="#0f172a" stroke-width="3"/>
+        <circle cx="50" cy="54" r="27" fill="#fde047" stroke="#0f172a" stroke-width="3"/>
+        <ellipse cx="38" cy="50" rx="4" ry="4.5" fill="#0f172a"/>
+        <ellipse cx="62" cy="50" rx="4" ry="4.5" fill="#0f172a"/>
+        <path d="M33 42 Q 38 39 43 42" stroke="#0f172a" stroke-width="2.5" fill="none"/>
+        <path d="M57 42 Q 62 39 67 42" stroke="#0f172a" stroke-width="2.5" fill="none"/>
+        <path d="M42 62 Q 50 66 58 62" fill="none" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+        <path d="M25 80 C25 70, 75 70, 75 80 L78 96 L22 96 Z" fill="#0e7490" stroke="#0f172a" stroke-width="3"/>
+      </svg>
+    `
+  },
+  {
+    id: 'cyber',
+    name: 'Cyber AI',
+    title: 'Next-Gen Autonomous Agent',
+    role: 'Quantum System Architect',
+    quote: "Neural harness initialized. Ready to automate complex multi-file refactoring.",
+    bgColor: 'bg-emerald-200',
+    accentColor: 'border-emerald-600 text-emerald-900',
+    badgeBg: 'bg-emerald-400 text-slate-900',
+    colorHex: '#10b981',
+    stats: { speed: 99, humor: 70, intelligence: 100, chaos: 40 },
+    defaultMemory: `# Memory - Cyber AI
+- High frequency asynchronous agent loop active.
+- Quantum sandbox security protocol enforced.`,
+    avatarSvg: `
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <circle cx="50" cy="50" r="46" fill="#6ee7b7" stroke="#0f172a" stroke-width="4"/>
+        <rect x="25" y="25" width="50" height="50" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="3"/>
+        <circle cx="38" cy="48" r="6" fill="#34d399"/>
+        <circle cx="62" cy="48" r="6" fill="#34d399"/>
+        <circle cx="38" cy="48" r="2" fill="#ffffff"/>
+        <circle cx="62" cy="48" r="2" fill="#ffffff"/>
+        <rect x="36" y="60" width="28" height="4" rx="2" fill="#34d399"/>
+        <path d="M50 10 L50 25 M30 15 L38 25 M70 15 L62 25" stroke="#0f172a" stroke-width="3"/>
+        <circle cx="50" cy="10" r="4" fill="#fbbf24" stroke="#0f172a" stroke-width="2"/>
+        <path d="M22 82 C22 72, 78 72, 78 82 L80 96 L20 96 Z" fill="#047857" stroke="#0f172a" stroke-width="3"/>
+      </svg>
+    `
   }
 ];
+
