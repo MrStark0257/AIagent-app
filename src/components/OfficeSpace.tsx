@@ -30,7 +30,7 @@ export interface DailyWorkItem {
   agentName: string;
   task: string;
   output: string;
-  category: 'Management' | 'Mailing' | 'BizDev' | 'Research' | 'Content' | 'Operations' | 'Planning';
+  category: 'Management' | 'Mailing' | 'BizDev' | 'Research' | 'Content' | 'Operations' | 'Planning' | 'Coding';
   status: 'completed' | 'active' | 'queued';
   progress: number;
   loc: number;
@@ -813,7 +813,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
 
         const taskInfo = specializedTasks[emp.character.id] || {
           task: `Build & optimize ${emp.character.role} microservices`,
-          category: 'Coding' as const,
+          category: 'Coding' as DailyWorkItem['category'],
           loc: 250
         };
 
@@ -844,7 +844,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
     const newItems: DailyWorkItem[] = workerEmployees.map(w => {
       const taskInfo = specializedTasks[w.character.id] || {
         task: `Build & optimize ${w.character.role} microservices`,
-        category: 'Coding' as const,
+        category: 'Coding' as DailyWorkItem['category'],
         loc: 250
       };
       return {
@@ -1082,7 +1082,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
 
                 {/* Right: Speech & Action (3 cols) */}
                 <div className="md:col-span-3 text-right space-y-1.5">
-                  <div className="speech-bubble-left px-2.5 py-1 text-[10px] font-bold text-slate-900 animate-bounce inline-block text-left">
+                  <div className="speech-bubble-left px-2.5 py-1 text-[10px] font-bold text-slate-900 animate-smooth-bounce inline-block text-left">
                     "{activeFloorSpeech[managerEmployee.character.id] || managerEmployee.character.quote.slice(0, 35) + "..."}"
                   </div>
                   <button
@@ -1115,7 +1115,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
           </div>
 
           {/* Cartoon Computer Desks & Working Employees Grid */}
-          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-stretch">
             {workerEmployees.map((emp, index) => {
               const isSelected = selectedDeskId === emp.character.id;
               const speech = activeFloorSpeech[emp.character.id];
@@ -1124,35 +1124,39 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                 <div
                   key={emp.character.id}
                   onClick={() => handleSelectDesk(emp)}
-                  className={`cartoon-card p-3.5 cursor-pointer transition-all relative flex flex-col justify-between border-3 border-slate-900 ${
+                  className={`cartoon-card p-3.5 cursor-pointer transition-all relative flex flex-col justify-between h-full border-3 border-slate-900 ${
                     isSelected
                       ? `${emp.character.bgColor} ring-4 ring-slate-900 -translate-y-1 shadow-[8px_8px_0px_#0f172a]`
                       : 'bg-white hover:bg-slate-50'
                   }`}
                 >
                   {/* Desk Header with Active Working AI Badge */}
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-heading text-[10px] font-extrabold px-2 py-0.5 bg-slate-900 text-amber-300 rounded border border-slate-900">
+                  <div className="flex justify-between items-center mb-2 shrink-0">
+                    <span className="font-heading text-[10px] font-extrabold px-2 py-0.5 bg-slate-900 text-amber-300 rounded border border-slate-900 truncate max-w-[60%]">
                       DESK {index + 1} • {emp.character.name.toUpperCase()}
                     </span>
-                    <span className="font-mono text-[9px] font-bold px-2 py-0.5 bg-amber-300 border border-slate-900 rounded-full text-slate-900 flex items-center gap-1">
+                    <span className="font-mono text-[9px] font-bold px-2 py-0.5 bg-amber-300 border border-slate-900 rounded-full text-slate-900 flex items-center gap-1 shrink-0">
                       <span>{emp.aiEngine.logoText}</span>
                       <span>{emp.aiEngine.name}</span>
                     </span>
                   </div>
 
-                  {/* Speech Bubble floating over working employee */}
-                  {speech && (
-                    <div className="speech-bubble-left mb-2 px-2.5 py-1 text-[10px] font-bold text-slate-900 animate-bounce">
-                      {speech}
-                    </div>
-                  )}
+                  {/* Fixed-Height Speech Bubble Reserved Slot */}
+                  <div className="h-8 mb-2 flex items-center shrink-0">
+                    {speech ? (
+                      <div className="speech-bubble-left w-full px-2.5 py-1 text-[10px] font-bold text-slate-900 animate-smooth-bounce truncate">
+                        {speech}
+                      </div>
+                    ) : (
+                      <div className="w-full h-full" />
+                    )}
+                  </div>
 
                   {/* Cartoon Workstation Illustration: Chair + Sitting Employee + Computer Desk */}
-                  <div className="bg-slate-100 p-3 rounded-xl border-2 border-slate-900 relative my-1 text-center">
+                  <div className="bg-slate-100 p-3 rounded-xl border-2 border-slate-900 relative my-1 text-center flex flex-col justify-between h-[175px] shrink-0">
                     
                     {/* Glowing Dual Monitor Screen */}
-                    <div className="bg-slate-900 rounded-lg p-2 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-2 relative">
+                    <div className="bg-slate-900 rounded-lg p-2 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-2 relative shrink-0">
                       <div className="flex justify-between items-center text-[8px] font-mono text-slate-400 pb-1 mb-1 border-b border-slate-700">
                         <span className="flex items-center gap-1 text-amber-400 font-bold">
                           <Monitor className="w-2.5 h-2.5" /> {emp.aiEngine.name}
@@ -1165,15 +1169,15 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                     </div>
 
                     {/* Sitting Cartoon Employee & Ergonomic Office Chair */}
-                    <div className="flex items-center justify-center gap-2 relative">
-                      <div className="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-slate-900 absolute -z-0 top-1 shadow-[2px_2px_0px_#0f172a]" />
+                    <div className="flex items-center justify-center gap-2 relative h-[65px] shrink-0">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-slate-900 absolute -z-0 top-0 shadow-[2px_2px_0px_#0f172a]" />
 
                       <div
                         className="w-12 h-12 rounded-xl border-2 border-slate-900 bg-white overflow-hidden relative z-10 animate-float"
                         dangerouslySetInnerHTML={{ __html: emp.character.avatarSvg }}
                       />
 
-                      <div className="w-12 h-3 bg-slate-300 border border-slate-900 rounded flex items-center justify-center text-[7px] font-mono font-bold text-slate-700 animate-pulse">
+                      <div className="w-12 h-3 bg-slate-300 border border-slate-900 rounded flex items-center justify-center text-[7px] font-mono font-bold text-slate-700 animate-smooth-pulse">
                         ⌨️ TYPING
                       </div>
                     </div>
@@ -1181,13 +1185,13 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                   </div>
 
                   {/* Employee Role & Active Task */}
-                  <div className="mt-2 text-left">
+                  <div className="mt-2 text-left shrink-0">
                     <div className="flex justify-between items-center">
                       <h4 className="font-heading font-extrabold text-xs text-slate-900 truncate">
                         {emp.character.title}
                       </h4>
                     </div>
-                    <p className="text-[10px] text-slate-600 font-medium truncate mt-0.5">
+                    <p className="text-[10px] text-slate-600 font-medium truncate mt-0.5" title={emp.currentTask}>
                       📌 {emp.currentTask}
                     </p>
                   </div>
@@ -1202,9 +1206,9 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                 cartoonAudio.playPop();
                 onOpenAddAgent();
               }}
-              className="cartoon-card p-3.5 cursor-pointer transition-all relative flex flex-col justify-between border-3 border-dashed border-slate-900 bg-amber-50 hover:bg-amber-100 min-h-[220px] group shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1"
+              className="cartoon-card p-3.5 cursor-pointer transition-all relative flex flex-col justify-between h-full border-3 border-dashed border-slate-900 bg-amber-50 hover:bg-amber-100 group shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1"
             >
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-center mb-2 shrink-0">
                 <span className="font-heading text-[10px] font-extrabold px-2 py-0.5 bg-amber-400 text-slate-900 rounded border border-slate-900">
                   NEW DESK +
                 </span>
@@ -1213,7 +1217,10 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                 </span>
               </div>
 
-              <div className="bg-white/80 p-3 rounded-xl border-2 border-dashed border-slate-900 text-center my-auto flex flex-col items-center justify-center py-5">
+              {/* Reserved height matching speech bubble slot */}
+              <div className="h-8 mb-2 shrink-0" />
+
+              <div className="bg-white/80 p-3 rounded-xl border-2 border-dashed border-slate-900 text-center my-1 flex flex-col items-center justify-center h-[175px] shrink-0">
                 <div className="w-12 h-12 rounded-2xl bg-amber-400 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition-transform mb-2">
                   ✨
                 </div>
@@ -1225,8 +1232,8 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                 </p>
               </div>
 
-              <div className="mt-2 text-center">
-                <span className="text-[10px] font-extrabold text-amber-900 font-heading bg-amber-300 px-3 py-1 rounded-full border border-slate-900">
+              <div className="mt-2 text-center shrink-0 flex items-center justify-center">
+                <span className="text-[10px] font-extrabold text-amber-900 font-heading bg-amber-300 px-3 py-1 rounded-full border border-slate-900 shadow-[1px_1px_0px_#0f172a]">
                   + Spin Up Harness
                 </span>
               </div>
@@ -1843,6 +1850,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                   <option value="Content">Content / Marketing 📢</option>
                   <option value="Operations">Operations / Client 📋</option>
                   <option value="Planning">Planning 📅</option>
+                  <option value="Coding">Coding / Engineering 💻</option>
                 </select>
               </div>
 
