@@ -205,7 +205,7 @@ export const LeadHunter: React.FC<LeadHunterProps> = ({
       <div className="cartoon-card p-4 bg-white flex flex-wrap items-center justify-between gap-3">
         
         {/* Niche Filter Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full py-1">
           <Filter className="w-4 h-4 text-slate-500 shrink-0 mr-1" />
           {niches.map((n) => (
             <button
@@ -214,10 +214,10 @@ export const LeadHunter: React.FC<LeadHunterProps> = ({
                 cartoonAudio.playClick();
                 setSelectedNiche(n);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border-2 border-slate-900 transition-all shrink-0 ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] transition-all shrink-0 inline-flex items-center justify-center leading-none cursor-pointer active:translate-y-0.5 active:shadow-none ${
                 selectedNiche === n
-                  ? 'bg-amber-400 text-slate-900 shadow-[2px_2px_0px_#0f172a] -translate-y-0.5'
-                  : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                  ? 'bg-amber-400 text-slate-900 ring-1 ring-slate-900'
+                  : 'bg-slate-50 text-slate-700 hover:bg-amber-100 hover:text-slate-900'
               }`}
             >
               {n}

@@ -127,7 +127,7 @@ export const StepTwoCommandCenter: React.FC<StepTwoCommandCenterProps> = ({
         </div>
 
         {/* Tab Controls Navigation */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none py-1">
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -135,9 +135,9 @@ export const StepTwoCommandCenter: React.FC<StepTwoCommandCenterProps> = ({
                 cartoonAudio.playClick();
                 setActiveTab(t.id as any);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-slate-900 transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] transition-all inline-flex items-center gap-1.5 shrink-0 cursor-pointer active:translate-y-0.5 active:shadow-none ${
                 activeTab === t.id
-                  ? 'bg-amber-400 text-slate-900 shadow-[3px_3px_0px_#0f172a] -translate-y-0.5'
+                  ? 'bg-amber-400 text-slate-900 ring-1 ring-slate-900'
                   : 'bg-white text-slate-700 hover:bg-slate-100'
               }`}
             >

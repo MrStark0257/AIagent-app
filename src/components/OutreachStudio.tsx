@@ -175,15 +175,15 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
       <div className="cartoon-card bg-white p-5">
         
         {/* Channel Switcher */}
-        <div className="flex items-center gap-2 pb-3 mb-4 border-b-2 border-slate-900 overflow-x-auto">
+        <div className="flex items-center gap-2 pb-3 mb-4 border-b-2 border-slate-900 overflow-x-auto py-1">
           <button
             onClick={() => {
               cartoonAudio.playClick();
               setActiveChannel('email');
             }}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 border-2 border-slate-900 transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] transition-all shrink-0 leading-none cursor-pointer active:translate-y-0.5 active:shadow-none ${
               activeChannel === 'email'
-                ? 'bg-amber-400 text-slate-900 shadow-[2px_2px_0px_#0f172a]'
+                ? 'bg-amber-400 text-slate-900 ring-1 ring-slate-900'
                 : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
             }`}
           >
@@ -195,9 +195,9 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
               cartoonAudio.playClick();
               setActiveChannel('linkedin');
             }}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 border-2 border-slate-900 transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] transition-all shrink-0 leading-none cursor-pointer active:translate-y-0.5 active:shadow-none ${
               activeChannel === 'linkedin'
-                ? 'bg-sky-400 text-slate-900 shadow-[2px_2px_0px_#0f172a]'
+                ? 'bg-sky-400 text-slate-900 ring-1 ring-slate-900'
                 : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
             }`}
           >
@@ -209,9 +209,9 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
               cartoonAudio.playClick();
               setActiveChannel('phone');
             }}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 border-2 border-slate-900 transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] transition-all shrink-0 leading-none cursor-pointer active:translate-y-0.5 active:shadow-none ${
               activeChannel === 'phone'
-                ? 'bg-purple-400 text-slate-900 shadow-[2px_2px_0px_#0f172a]'
+                ? 'bg-purple-400 text-slate-900 ring-1 ring-slate-900'
                 : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
             }`}
           >
@@ -223,9 +223,9 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
               cartoonAudio.playClick();
               setActiveChannel('video');
             }}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 border-2 border-slate-900 transition-all ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] transition-all shrink-0 leading-none cursor-pointer active:translate-y-0.5 active:shadow-none ${
               activeChannel === 'video'
-                ? 'bg-pink-400 text-slate-900 shadow-[2px_2px_0px_#0f172a]'
+                ? 'bg-pink-400 text-slate-900 ring-1 ring-slate-900'
                 : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
             }`}
           >
