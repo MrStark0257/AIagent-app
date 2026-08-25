@@ -13,42 +13,63 @@ export interface GeneratedOutreach {
   isLiveGemini?: boolean;
 }
 
-function parseLLMJson(rawText: string): any {
+function parseLLMJson(rawText: string, lead: Lead, auditReport?: WebsiteAuditReport, angle: 'audit-focused' | 'roi-focused' | 'competitor-focused' = 'audit-focused'): any {
   let cleaned = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
 
-  // Attempt 1: Standard JSON parse
+  let parsedObj: any = null;
+
   try {
-    return JSON.parse(cleaned);
+    parsedObj = JSON.parse(cleaned);
   } catch (e1) {
-    // Attempt 2: Sanitize unescaped newlines/tabs inside string values
     try {
       const sanitized = cleaned.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, (match) => {
         return match.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
       });
-      return JSON.parse(sanitized);
+      parsedObj = JSON.parse(sanitized);
     } catch (e2) {
-      // Attempt 3: Regex extraction fallback for each key
-      const extractField = (key: string): string => {
-        const regex = new RegExp(`"${key}"\\s*:\\s*"([\\s\\S]*?)"(?=\\s*,\\s*"|\\s*\\})`, 'i');
-        const match = cleaned.match(regex);
-        return match ? match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').trim() : '';
+      const extractField = (keys: string[]): string => {
+        for (const k of keys) {
+          const regex = new RegExp(`"${k}"\\s*:\\s*"([\\s\\S]*?)"(?=\\s*,\\s*"|\\s*\\})`, 'i');
+          const match = cleaned.match(regex);
+          if (match && match[1]) {
+            return match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').trim();
+          }
+        }
+        return '';
       };
 
-      return {
-        emailSubject: extractField('emailSubject'),
-        emailBody: extractField('emailBody'),
-        linkedInInMail: extractField('linkedInInMail'),
-        coldCallScript: extractField('coldCallScript'),
-        videoPitchScript: extractField('videoPitchScript'),
+      parsedObj = {
+        emailSubject: extractField(['emailSubject', 'subject', 'email_subject']),
+        emailBody: extractField(['emailBody', 'email_body', 'body', 'email']),
+        linkedInInMail: extractField(['linkedInInMail', 'linkedin_inmail', 'linkedin', 'inmail']),
+        coldCallScript: extractField(['coldCallScript', 'cold_call_script', 'coldcall', 'script']),
+        videoPitchScript: extractField(['videoPitchScript', 'video_pitch_script', 'video', 'video_script']),
       };
     }
   }
+
+  const fallback = generatePersonalizedOutreach(lead, auditReport, angle);
+
+  const emailSubject = parsedObj?.emailSubject || parsedObj?.subject || parsedObj?.email_subject || fallback.emailSubject;
+  const emailBody = parsedObj?.emailBody || parsedObj?.email_body || parsedObj?.body || parsedObj?.email || fallback.emailBody;
+  const linkedInInMail = parsedObj?.linkedInInMail || parsedObj?.linkedin_inmail || parsedObj?.linkedin || fallback.linkedInInMail;
+  const coldCallScript = parsedObj?.coldCallScript || parsedObj?.cold_call_script || parsedObj?.coldcall || fallback.coldCallScript;
+  const videoPitchScript = parsedObj?.videoPitchScript || parsedObj?.video_pitch_script || parsedObj?.video || fallback.videoPitchScript;
+
+  return {
+    emailSubject,
+    emailBody,
+    linkedInInMail,
+    coldCallScript,
+    videoPitchScript,
+  };
 }
 
 export async function generateLiveOutreachWithGemini(
   lead: Lead,
   auditReport?: WebsiteAuditReport,
-  angle: 'audit-focused' | 'roi-focused' | 'competitor-focused' = 'audit-focused'
+  angle: 'audit-focused' | 'roi-focused' | 'competitor-focused' = 'audit-focused',
+  customInstruction?: string
 ): Promise<GeneratedOutreach> {
   const prompt = `You are an elite B2B Sales & AI Copywriting Agent. Write high-converting personalized outreach for the following client:
 Company Name: ${lead.companyName}
@@ -62,6 +83,7 @@ Mobile Load Speed: ${auditReport ? auditReport.loadTimeSeconds + 's' : '4.2s'}
 Est Monthly Revenue Loss: ${auditReport ? auditReport.estMonthlyRevenueLoss : '$8.5k/month'}
 
 Angle strategy requested: ${angle}
+${customInstruction ? `Special Custom Requirement: ${customInstruction}` : ''}
 
 Return a strictly formatted JSON object with no unescaped newlines inside string values:
 {
@@ -74,15 +96,15 @@ Return a strictly formatted JSON object with no unescaped newlines inside string
 
   try {
     const { text, keyUsedIndex } = await callGemini(prompt);
-    const parsed = parseLLMJson(text);
+    const parsed = parseLLMJson(text, lead, auditReport, angle);
 
     return {
       angle: angle,
-      emailSubject: parsed.emailSubject || `Quick note for ${lead.contactName} regarding ${lead.companyName}`,
-      emailBody: parsed.emailBody || '',
-      linkedInInMail: parsed.linkedInInMail || '',
-      coldCallScript: parsed.coldCallScript || '',
-      videoPitchScript: parsed.videoPitchScript || '',
+      emailSubject: parsed.emailSubject,
+      emailBody: parsed.emailBody,
+      linkedInInMail: parsed.linkedInInMail,
+      coldCallScript: parsed.coldCallScript,
+      videoPitchScript: parsed.videoPitchScript,
       keyUsedIndex: keyUsedIndex,
       isLiveGemini: true,
     };

@@ -42,16 +42,43 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
     generatePersonalizedOutreach(defaultLead, selectedAudit, 'audit-focused')
   );
   const [copied, setCopied] = useState<boolean>(false);
+  const [customPrompt, setCustomPrompt] = useState<string>('');
   const [isGeneratingGemini, setIsGeneratingGemini] = useState<boolean>(false);
   const [rotStats, setRotStats] = useState(getRotationStats());
+
+  const streamOutreachCopy = (res: GeneratedOutreach) => {
+    let charIndex = 0;
+    const fullBody = res.emailBody;
+    const fullSubject = res.emailSubject;
+
+    setOutreachCopy({
+      ...res,
+      emailBody: '',
+      emailSubject: '',
+    });
+
+    const interval = setInterval(() => {
+      charIndex += 5;
+      if (charIndex >= fullBody.length && charIndex >= fullSubject.length) {
+        clearInterval(interval);
+        setOutreachCopy(res);
+      } else {
+        setOutreachCopy({
+          ...res,
+          emailSubject: fullSubject.substring(0, Math.min(charIndex, fullSubject.length)),
+          emailBody: fullBody.substring(0, Math.min(charIndex, fullBody.length)),
+        });
+      }
+    }, 15);
+  };
 
   const handleGenerateGeminiCopy = async (selectedAngle = angle) => {
     cartoonAudio.playPop(800);
     setIsGeneratingGemini(true);
     try {
-      const res = await generateLiveOutreachWithGemini(defaultLead, selectedAudit, selectedAngle);
-      setOutreachCopy(res);
+      const res = await generateLiveOutreachWithGemini(defaultLead, selectedAudit, selectedAngle, customPrompt);
       setRotStats(getRotationStats());
+      streamOutreachCopy(res);
     } finally {
       setIsGeneratingGemini(false);
     }
@@ -158,6 +185,30 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
             ✓ Audit Score: {selectedAudit.overallScore}/100 ({selectedAudit.loadTimeSeconds}s load time)
           </div>
         )}
+      </div>
+
+      {/* Custom AI Prompt Instruction Input */}
+      <div className="cartoon-card p-4 bg-purple-50 border-2 border-slate-900">
+        <label className="block text-xs font-bold font-heading uppercase text-purple-900 mb-1 flex items-center justify-between">
+          <span>✨ Custom AI Prompt Instruction (Test Live Gemini Intelligence):</span>
+          <span className="text-[10px] font-mono text-purple-700 font-normal">Type anything unique below to prove live AI generation!</span>
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="e.g. Write it like a pirate, mention 20% discount, or congratulate on winning dentist of the year..."
+            value={customPrompt}
+            onChange={(e) => setCustomPrompt(e.target.value)}
+            className="w-full text-xs font-bold px-3 py-2 bg-white border-2 border-slate-900 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-400"
+          />
+          <button
+            onClick={() => handleGenerateGeminiCopy()}
+            disabled={isGeneratingGemini}
+            className="px-4 py-2 bg-purple-400 hover:bg-purple-300 text-slate-900 font-extrabold text-xs border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] shrink-0 active:translate-y-0.5"
+          >
+            {isGeneratingGemini ? 'Generating...' : '⚡ Generate Custom AI Copy'}
+          </button>
+        </div>
       </div>
 
       {/* Angle Selector Tabs */}

@@ -96,7 +96,7 @@ export async function callGemini(
               generationConfig: {
                 responseMimeType: 'application/json',
                 temperature: 0.7,
-                maxOutputTokens: 1024,
+                maxOutputTokens: 3072,
               },
             }),
           }
