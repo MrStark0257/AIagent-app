@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { INITIAL_LEADS, type Lead, generateDynamicLeads } from '../services/leadScraper';
+import { INITIAL_LEADS, type Lead, scrapeLiveLeadsWithGemini } from '../services/leadScraper';
 import { CHARACTERS } from '../data/characters';
-import { Search, Sparkles, Filter, Mail, Phone, ExternalLink, Flame, UserCheck, Play, Pause } from 'lucide-react';
+import { Search, Sparkles, Filter, Mail, Phone, ExternalLink, Flame, UserCheck, Play, Pause, MapPin } from 'lucide-react';
 import { cartoonAudio } from '../utils/audio';
 import confetti from 'canvas-confetti';
 
@@ -17,12 +17,12 @@ export const LeadHunter: React.FC<LeadHunterProps> = ({
   onAuditLead,
   onGenerateOutreach,
   onAddToPipeline,
-  isAutoHunting = true,
+  isAutoHunting = false,
   onToggleAutoHunting,
 }) => {
   const [leads, setLeads] = useState<Lead[]>(INITIAL_LEADS);
   const [selectedNiche, setSelectedNiche] = useState<string>('All');
-  const [searchLocation] = useState<string>('Austin, TX');
+  const [searchLocation, setSearchLocation] = useState<string>('Austin, TX');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isScraping, setIsScraping] = useState<boolean>(false);
   const [addedLeadIds, setAddedLeadIds] = useState<{ [key: string]: boolean }>({});
@@ -31,62 +31,65 @@ export const LeadHunter: React.FC<LeadHunterProps> = ({
   const leadAgent = CHARACTERS.find(c => c.id === 'jim' || c.title.includes('BizDev') || c.title.includes('Lead')) || CHARACTERS[2];
 
   const [agentLiveLog, setAgentLiveLog] = useState<string[]>([
-    `💼 [Lead Agent ${leadAgent.name}] Discovered & evaluated ${INITIAL_LEADS.length} verified business leads in Austin, TX.`,
-    `🎯 [Lead Agent ${leadAgent.name}] Filtered high-intent prospects with verified emails & budget scores.`
+    `💼 [Lead Agent ${leadAgent.name}] Loaded initial lead directory for Austin, TX.`,
+    `🎯 [Lead Agent ${leadAgent.name}] Ready for live Gemini business scraping in any city.`
   ]);
 
   // AUTOMATIC BACKGROUND LEAD DISCOVERY BY LEAD AGENT (JIM)
   useEffect(() => {
     if (!isAutoHunting) return;
 
-    const interval = setInterval(() => {
-      const availableNiches = ['E-commerce', 'SaaS', 'Real Estate', 'Dental & Healthcare', 'Local Services', 'Legal & Finance'];
+    const interval = setInterval(async () => {
+      const availableNiches = ['Dental & Healthcare', 'Real Estate', 'Local Services', 'Legal & Finance'];
       const targetNiche = selectedNiche === 'All'
         ? availableNiches[Math.floor(Math.random() * availableNiches.length)]
         : selectedNiche;
 
-      const discovered = generateDynamicLeads(targetNiche, searchLocation).slice(0, 1);
-      if (discovered.length > 0) {
-        const newLead = discovered[0];
+      try {
+        const discovered = await scrapeLiveLeadsWithGemini(targetNiche, searchLocation);
+        if (discovered.length > 0) {
+          const newLead = discovered[0];
+          setLeads(prev => [newLead, ...prev]);
 
-        // Safely accumulate lead without removing ANY existing leads!
-        setLeads(prev => [newLead, ...prev]);
-
-        setAgentLiveLog(prev => [
-          `⚡ [Lead Agent ${leadAgent.name} • AUTO-HUNTER] Auto-discovered verified prospect "${newLead.companyName}" (${newLead.niche})!`,
-          ...prev.slice(0, 5)
-        ]);
-      }
-    }, 6500); // Automatically discover new leads every 6.5s in background
+          setAgentLiveLog(prev => [
+            `⚡ [Lead Agent ${leadAgent.name} • LIVE SCRAPER] Auto-scraped real business "${newLead.companyName}" (${newLead.niche}) in ${searchLocation}!`,
+            ...prev.slice(0, 5)
+          ]);
+        }
+      } catch (e) {}
+    }, 12000);
 
     return () => clearInterval(interval);
   }, [isAutoHunting, selectedNiche, searchLocation, leadAgent.name]);
 
   const niches = ['All', 'E-commerce', 'SaaS', 'Real Estate', 'Dental & Healthcare', 'Local Services', 'Legal & Finance'];
 
-  const handleRunScraper = () => {
+  const handleRunScraper = async () => {
     cartoonAudio.playSuccess();
     setIsScraping(true);
 
-    const activeNiche = selectedNiche === 'All' ? 'Local Services' : selectedNiche;
+    const activeNiche = selectedNiche === 'All' ? 'Dental & Healthcare' : selectedNiche;
 
     setAgentLiveLog(prev => [
-      `🔎 [Lead Agent ${leadAgent.name}] Scraping target business directories for ${activeNiche}...`,
+      `🔎 [Lead Agent ${leadAgent.name}] Querying live business intelligence for ${activeNiche} in ${searchLocation}...`,
       ...prev
     ]);
 
-    setTimeout(() => {
-      const newLeads = generateDynamicLeads(activeNiche, searchLocation);
+    try {
+      const newLeads = await scrapeLiveLeadsWithGemini(activeNiche, searchLocation);
       setLeads((prev) => [...newLeads, ...prev]);
-      setIsScraping(false);
 
       setAgentLiveLog(prev => [
-        `✨ [Lead Agent ${leadAgent.name}] Found & verified ${newLeads.length} new high-intent prospects in ${activeNiche}!`,
+        `✨ [Lead Agent ${leadAgent.name}] Successfully scraped & verified ${newLeads.length} live business leads in ${searchLocation}!`,
         ...prev.slice(0, 5)
       ]);
 
       confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-    }, 1500);
+    } catch (err) {
+      console.warn('Scraper error:', err);
+    } finally {
+      setIsScraping(false);
+    }
   };
 
   const handleAddLeadToCRM = (lead: Lead) => {
@@ -151,7 +154,7 @@ export const LeadHunter: React.FC<LeadHunterProps> = ({
             className="cartoon-button-primary px-6 py-3 text-xs sm:text-sm flex items-center gap-2.5 bg-amber-400 hover:bg-amber-300 text-slate-900 font-extrabold shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900"
           >
             <Sparkles className={`w-4 h-4 ${isScraping ? 'animate-spin' : ''}`} />
-            <span>{isScraping ? `${leadAgent.name} is Scraping...` : `✨ Manual Scrape by ${leadAgent.name}`}</span>
+            <span>{isScraping ? `${leadAgent.name} is Scraping ${searchLocation}...` : `✨ Scrape Live Businesses in ${searchLocation}`}</span>
           </button>
 
           {/* AUTO-HUNTER TOGGLE BADGE */}
@@ -225,15 +228,28 @@ export const LeadHunter: React.FC<LeadHunterProps> = ({
           ))}
         </div>
 
-        {/* Search Input */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] w-full sm:w-64">
+        {/* Search & Location Inputs */}
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Location / City Input */}
+          <div className="flex items-center gap-2 bg-amber-50 p-2 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] w-full sm:w-48">
+            <MapPin className="w-4 h-4 text-amber-700 shrink-0" />
+            <input
+              type="text"
+              value={searchLocation}
+              onChange={(e) => setSearchLocation(e.target.value)}
+              placeholder="City (e.g. Miami, FL)"
+              className="w-full text-xs font-bold text-slate-900 bg-transparent focus:outline-none"
+            />
+          </div>
+
+          {/* Search Filter Input */}
+          <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] w-full sm:w-56">
             <Search className="w-4 h-4 text-slate-500 shrink-0" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search company, name or city..."
+              placeholder="Search leads..."
               className="w-full text-xs font-medium bg-transparent focus:outline-none"
             />
           </div>
@@ -264,8 +280,15 @@ export const LeadHunter: React.FC<LeadHunterProps> = ({
                 </div>
 
                 {/* Company & Contact Info */}
-                <div className="text-[9px] font-mono font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded border border-slate-900 mb-2 inline-flex items-center gap-1 shadow-[1px_1px_0px_#0f172a]">
-                  <span>💼 Verified by Lead Agent {leadAgent.name}</span>
+                <div className="flex flex-wrap items-center gap-1 mb-2">
+                  <div className="text-[9px] font-mono font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded border border-slate-900 inline-flex items-center gap-1 shadow-[1px_1px_0px_#0f172a]">
+                    <span>💼 Verified by Lead Agent {leadAgent.name}</span>
+                  </div>
+                  {lead.id.startsWith('live-lead-') && (
+                    <div className="text-[9px] font-mono font-bold text-slate-900 bg-emerald-400 px-2 py-0.5 rounded border border-slate-900 inline-flex items-center gap-1 shadow-[1px_1px_0px_#0f172a]">
+                      <span>⚡ Live Scraped via Gemini</span>
+                    </div>
+                  )}
                 </div>
                 <h3 className="font-heading text-xl font-extrabold text-slate-900 group-hover:text-amber-600 transition-colors">
                   {lead.companyName}

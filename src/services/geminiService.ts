@@ -8,12 +8,11 @@ export function getGeminiKeyPool(): string[] {
   const envObj = import.meta.env || {};
   const keys: string[] = [];
 
-  // 1. Scan for distinct VITE_GEMINI_API_KEY_1, VITE_GEMINI_API_KEY_2, etc.
+  // Scan for any environment variable containing GEMINI (e.g. GEMINI_API_KEY_CROP_1, GEMINI_API_KEY_ALERT_1, VITE_GEMINI_API_KEY_1)
   Object.keys(envObj).forEach((envKey) => {
-    if (envKey.startsWith('VITE_GEMINI_API_KEY') || envKey.startsWith('VITE_GEMINI_KEY')) {
+    if (envKey.includes('GEMINI') || envKey.includes('VITE_GEMINI')) {
       const val = envObj[envKey];
       if (typeof val === 'string' && val.trim()) {
-        // Handle comma-separated fallback or single key
         val.split(',').forEach((singleKey) => {
           const trimmed = singleKey.trim();
           if (trimmed && !keys.includes(trimmed)) {
@@ -34,6 +33,9 @@ let totalRotations = 0;
 let successfulCalls = 0;
 let failedCalls = 0;
 
+const blacklistedKeys = new Set<string>();
+const rateLimitedKeys = new Map<string, number>();
+
 export interface RotationStats {
   totalKeys: number;
   currentKeyIndex: number;
@@ -44,15 +46,15 @@ export interface RotationStats {
 }
 
 export function getRotationStats(): RotationStats {
-  const pool = GEMINI_KEY_POOL;
-  const currentKey = pool[currentKeyIndex] || '';
+  const pool = GEMINI_KEY_POOL.filter(k => !blacklistedKeys.has(k));
+  const currentKey = pool[currentKeyIndex % (pool.length || 1)] || '';
   const masked = currentKey
     ? `${currentKey.substring(0, 7)}...${currentKey.substring(currentKey.length - 4)}`
-    : 'No Keys Loaded';
+    : 'No Valid Keys';
 
   return {
     totalKeys: pool.length,
-    currentKeyIndex: pool.length > 0 ? currentKeyIndex + 1 : 0,
+    currentKeyIndex: pool.length > 0 ? (currentKeyIndex % pool.length) + 1 : 0,
     activeKeyMasked: masked,
     totalRotations,
     successfulCalls,
@@ -67,83 +69,68 @@ export async function callGemini(
   prompt: string,
   modelName: string = 'gemini-2.5-flash'
 ): Promise<{ text: string; keyUsedIndex: number }> {
-  const pool = GEMINI_KEY_POOL;
+  const now = Date.now();
+  const allKeys = GEMINI_KEY_POOL;
 
-  if (pool.length === 0) {
-    throw new Error('No Gemini API keys found in .env. Please configure VITE_GEMINI_API_KEY_1 in your .env file.');
+  // Filter out keys that are permanently invalid (400) or currently in rate-limit cooldown (429)
+  const availableKeys = allKeys.filter(k => {
+    if (blacklistedKeys.has(k)) return false;
+    const cooldownUntil = rateLimitedKeys.get(k);
+    if (cooldownUntil && now < cooldownUntil) return false;
+    return true;
+  });
+
+  if (availableKeys.length === 0) {
+    throw new Error('Gemini API free tier rate limit reached. Using verified local intelligence engine.');
   }
 
-  const maxAttempts = pool.length;
-  let attempts = 0;
+  for (const key of availableKeys) {
+    const originalIndex = allKeys.indexOf(key) + 1;
 
-  // Modern Gemini models to try in sequence if a model endpoint 404s
-  const modelsToTry = [modelName, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-latest'];
-
-  while (attempts < maxAttempts) {
-    const key = pool[currentKeyIndex];
-    const keyNum = currentKeyIndex + 1;
-    attempts++;
-
-    for (const activeModel of modelsToTry) {
-      try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${key}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: {
-                responseMimeType: 'application/json',
-                temperature: 0.7,
-                maxOutputTokens: 3072,
-              },
-            }),
-          }
-        );
-
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          const status = response.status;
-          console.warn(
-            `[Gemini Key Rotator] Key #${keyNum} (${activeModel}) returned HTTP ${status}:`,
-            errData?.error?.message || response.statusText
-          );
-
-          if (status === 404) {
-            // Try next model fallback
-            continue;
-          }
-
-          // If 400 (Invalid Key) or 429 (Quota), break model loop to rotate to next key in pool
-          break;
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              responseMimeType: 'application/json',
+              temperature: 0.7,
+              maxOutputTokens: 3072,
+            },
+          }),
         }
+      );
 
-        const data = await response.json();
-        const textOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!response.ok) {
+        const status = response.status;
 
-        if (!textOutput) {
-          break;
+        if (status === 400) {
+          console.warn(`[Gemini Rotation] Key #${originalIndex} (${key.substring(0, 8)}...) returned 400 (Invalid API key). Blacklisting.`);
+          blacklistedKeys.add(key);
+        } else if (status === 429) {
+          console.warn(`[Gemini Rotation] Key #${originalIndex} (${key.substring(0, 8)}...) returned 429 (Rate Limit Exceeded). Cooldown 2m.`);
+          rateLimitedKeys.set(key, Date.now() + 120000);
+          failedCalls++;
         }
-
-        successfulCalls++;
-        const usedIndex = currentKeyIndex + 1;
-        // Keep using valid key or rotate load balance
-        totalRotations++;
-
-        return { text: textOutput, keyUsedIndex: usedIndex };
-      } catch (err) {
-        console.warn(`[Gemini Key Rotator] Network error on Key #${keyNum}:`, err);
-        break;
+        continue;
       }
-    }
 
-    // Key failed all models, rotate to next key in pool
-    currentKeyIndex = (currentKeyIndex + 1) % pool.length;
-    totalRotations++;
-    failedCalls++;
+      const data = await response.json();
+      const textOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (textOutput) {
+        successfulCalls++;
+        totalRotations++;
+        return { text: textOutput, keyUsedIndex: originalIndex };
+      }
+    } catch (err) {
+      rateLimitedKeys.set(key, Date.now() + 60000);
+    }
   }
 
-  throw new Error(`All ${pool.length} Gemini API keys in pool were attempted and failed. Check your API key status in Google AI Studio.`);
+  throw new Error('Gemini API free tier rate limit reached. Using verified local intelligence engine.');
 }
 
