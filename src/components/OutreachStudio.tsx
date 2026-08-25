@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import type { Lead } from '../services/leadScraper';
 import type { WebsiteAuditReport } from '../services/websiteAuditor';
-import { generatePersonalizedOutreach, type GeneratedOutreach } from '../services/outreachGenerator';
-import { Mail, Sparkles, Copy, Check, Send, PhoneCall, Video, Share2 } from 'lucide-react';
+import { generatePersonalizedOutreach, generateLiveOutreachWithGemini, type GeneratedOutreach } from '../services/outreachGenerator';
+import { getRotationStats } from '../services/geminiService';
+import { Mail, Sparkles, Copy, Check, Send, PhoneCall, Video, Share2, RefreshCw, Key } from 'lucide-react';
 import { cartoonAudio } from '../utils/audio';
 import confetti from 'canvas-confetti';
 
@@ -41,6 +42,20 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
     generatePersonalizedOutreach(defaultLead, selectedAudit, 'audit-focused')
   );
   const [copied, setCopied] = useState<boolean>(false);
+  const [isGeneratingGemini, setIsGeneratingGemini] = useState<boolean>(false);
+  const [rotStats, setRotStats] = useState(getRotationStats());
+
+  const handleGenerateGeminiCopy = async (selectedAngle = angle) => {
+    cartoonAudio.playPop(800);
+    setIsGeneratingGemini(true);
+    try {
+      const res = await generateLiveOutreachWithGemini(defaultLead, selectedAudit, selectedAngle);
+      setOutreachCopy(res);
+      setRotStats(getRotationStats());
+    } finally {
+      setIsGeneratingGemini(false);
+    }
+  };
 
   const handleAngleChange = (newAngle: 'audit-focused' | 'roi-focused' | 'competitor-focused') => {
     cartoonAudio.playPop();
@@ -81,13 +96,45 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={handleSendToSequencer}
-          className="cartoon-button-primary px-5 py-3 text-xs sm:text-sm flex items-center gap-2"
-        >
-          <Send className="w-4 h-4" />
-          <span>Launch Drip Campaign in Sequencer →</span>
-        </button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <button
+            onClick={() => handleGenerateGeminiCopy()}
+            disabled={isGeneratingGemini}
+            className="px-4 py-3 bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-extrabold text-xs border-3 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] flex items-center justify-center gap-2 transition-transform active:translate-y-0.5"
+          >
+            <RefreshCw className={`w-4 h-4 text-slate-900 ${isGeneratingGemini ? 'animate-spin' : ''}`} />
+            <span>{isGeneratingGemini ? 'Rotating Key & Generating...' : '⚡ Generate Live Copy with Gemini (50 Keys Pool)'}</span>
+          </button>
+
+          <button
+            onClick={handleSendToSequencer}
+            className="cartoon-button-primary px-5 py-3 text-xs sm:text-sm flex items-center justify-center gap-2"
+          >
+            <Send className="w-4 h-4" />
+            <span>Launch Drip Campaign →</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Gemini Rotating Key Active Indicator Bar */}
+      <div className="cartoon-card p-3 bg-amber-100 border-2 border-slate-900 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+        <div className="flex items-center gap-2 text-amber-900 font-bold">
+          <Key className="w-4 h-4 text-amber-700 animate-bounce" />
+          <span>Gemini Key Rotator Engine Active:</span>
+          <span className="px-2 py-0.5 bg-amber-300 border border-slate-900 rounded text-slate-900 font-extrabold">
+            Key #{rotStats.currentKeyIndex} of {rotStats.totalKeys} ({rotStats.activeKeyMasked})
+          </span>
+        </div>
+        <div className="flex items-center gap-3 text-[11px] font-bold text-slate-700">
+          <span>🔄 Total Rotations: <strong>{rotStats.totalRotations}</strong></span>
+          <span className="text-emerald-700">✓ Success: <strong>{rotStats.successfulCalls}</strong></span>
+          {rotStats.failedCalls > 0 && <span className="text-rose-600">⚠ Failover Rotations: <strong>{rotStats.failedCalls}</strong></span>}
+          {outreachCopy.isLiveGemini && (
+            <span className="cartoon-badge px-2 py-0.5 bg-emerald-400 text-slate-900 rounded font-extrabold">
+              ⚡ Generated via Gemini Key #{outreachCopy.keyUsedIndex}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Target Lead Summary Header */}

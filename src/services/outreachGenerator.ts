@@ -1,5 +1,6 @@
 import type { Lead } from './leadScraper';
 import type { WebsiteAuditReport } from './websiteAuditor';
+import { callGemini } from './geminiService';
 
 export interface GeneratedOutreach {
   emailSubject: string;
@@ -8,7 +9,90 @@ export interface GeneratedOutreach {
   coldCallScript: string;
   videoPitchScript: string;
   angle: 'audit-focused' | 'roi-focused' | 'competitor-focused';
+  keyUsedIndex?: number;
+  isLiveGemini?: boolean;
 }
+
+function parseLLMJson(rawText: string): any {
+  let cleaned = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+
+  // Attempt 1: Standard JSON parse
+  try {
+    return JSON.parse(cleaned);
+  } catch (e1) {
+    // Attempt 2: Sanitize unescaped newlines/tabs inside string values
+    try {
+      const sanitized = cleaned.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, (match) => {
+        return match.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
+      });
+      return JSON.parse(sanitized);
+    } catch (e2) {
+      // Attempt 3: Regex extraction fallback for each key
+      const extractField = (key: string): string => {
+        const regex = new RegExp(`"${key}"\\s*:\\s*"([\\s\\S]*?)"(?=\\s*,\\s*"|\\s*\\})`, 'i');
+        const match = cleaned.match(regex);
+        return match ? match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').trim() : '';
+      };
+
+      return {
+        emailSubject: extractField('emailSubject'),
+        emailBody: extractField('emailBody'),
+        linkedInInMail: extractField('linkedInInMail'),
+        coldCallScript: extractField('coldCallScript'),
+        videoPitchScript: extractField('videoPitchScript'),
+      };
+    }
+  }
+}
+
+export async function generateLiveOutreachWithGemini(
+  lead: Lead,
+  auditReport?: WebsiteAuditReport,
+  angle: 'audit-focused' | 'roi-focused' | 'competitor-focused' = 'audit-focused'
+): Promise<GeneratedOutreach> {
+  const prompt = `You are an elite B2B Sales & AI Copywriting Agent. Write high-converting personalized outreach for the following client:
+Company Name: ${lead.companyName}
+Contact Name: ${lead.contactName} (${lead.role})
+Niche: ${lead.niche}
+Location: ${lead.location}
+Website: ${lead.website}
+Tech Stack: ${lead.techStack.join(', ')}
+SEO Score: ${auditReport ? auditReport.overallScore : lead.initialSeoScore}/100
+Mobile Load Speed: ${auditReport ? auditReport.loadTimeSeconds + 's' : '4.2s'}
+Est Monthly Revenue Loss: ${auditReport ? auditReport.estMonthlyRevenueLoss : '$8.5k/month'}
+
+Angle strategy requested: ${angle}
+
+Return a strictly formatted JSON object with no unescaped newlines inside string values:
+{
+  "emailSubject": "string",
+  "emailBody": "string",
+  "linkedInInMail": "string",
+  "coldCallScript": "string",
+  "videoPitchScript": "string"
+}`;
+
+  try {
+    const { text, keyUsedIndex } = await callGemini(prompt);
+    const parsed = parseLLMJson(text);
+
+    return {
+      angle: angle,
+      emailSubject: parsed.emailSubject || `Quick note for ${lead.contactName} regarding ${lead.companyName}`,
+      emailBody: parsed.emailBody || '',
+      linkedInInMail: parsed.linkedInInMail || '',
+      coldCallScript: parsed.coldCallScript || '',
+      videoPitchScript: parsed.videoPitchScript || '',
+      keyUsedIndex: keyUsedIndex,
+      isLiveGemini: true,
+    };
+  } catch (err) {
+    console.warn('[Gemini Service] Falling back to static generator:', err);
+    const fallback = generatePersonalizedOutreach(lead, auditReport, angle);
+    return { ...fallback, isLiveGemini: false };
+  }
+}
+
 
 export function generatePersonalizedOutreach(
   lead: Lead,
