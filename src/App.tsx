@@ -25,7 +25,16 @@ export function App() {
   const [newlyAddedAgent, setNewlyAddedAgent] = useState<{ character: CartoonCharacter; aiEngine?: any } | null>(null);
 
   // Active state objects across modules
-  const [pipelineLeads, setPipelineLeads] = useState<Lead[]>(INITIAL_LEADS);
+  const [pipelineLeads, setPipelineLeads] = useState<Lead[]>(() => {
+    try {
+      const saved = localStorage.getItem('ai_agency_crm_leads');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return INITIAL_LEADS;
+  });
   const [selectedLead, setSelectedLead] = useState<Lead | undefined>(INITIAL_LEADS[0]);
   const [selectedAudit, setSelectedAudit] = useState<WebsiteAuditReport | undefined>(() =>
     runWebsiteAudit(INITIAL_LEADS[0].website, INITIAL_LEADS[0].companyName)
@@ -54,7 +63,11 @@ export function App() {
   const handleAddToPipeline = (lead: Lead) => {
     setPipelineLeads((prev) => {
       if (prev.some((l) => l.id === lead.id)) return prev;
-      return [lead, ...prev];
+      const updated = [lead, ...prev];
+      try {
+        localStorage.setItem('ai_agency_crm_leads', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
     });
   };
 
@@ -152,6 +165,7 @@ export function App() {
         {activeTab === 'crm' && (
           <SalesPipeline
             pipelineLeads={pipelineLeads}
+            onUpdateLeads={(updated) => setPipelineLeads(updated)}
             onSelectLead={(lead) => {
               setSelectedLead(lead);
               handleAuditLead(lead);

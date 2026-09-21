@@ -3,7 +3,8 @@ import type { Lead } from '../services/leadScraper';
 import type { WebsiteAuditReport } from '../services/websiteAuditor';
 import { generatePersonalizedOutreach, generateLiveOutreachWithGemini, type GeneratedOutreach } from '../services/outreachGenerator';
 import { getRotationStats } from '../services/geminiService';
-import { Mail, Sparkles, Copy, Check, Send, PhoneCall, Video, Share2, RefreshCw, Key } from 'lucide-react';
+import { Mail, Sparkles, Copy, Check, Send, PhoneCall, Video, Share2, RefreshCw, Key, UserCheck } from 'lucide-react';
+import { CHARACTERS } from '../data/characters';
 import { cartoonAudio } from '../utils/audio';
 import confetti from 'canvas-confetti';
 
@@ -36,15 +37,35 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
     leadScore: 88,
   };
 
+  const effectiveAudit: WebsiteAuditReport | undefined = selectedAudit || (() => {
+    try {
+      const saved = localStorage.getItem('ai_agency_latest_audit');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return undefined;
+  })();
+
   const [angle, setAngle] = useState<'audit-focused' | 'roi-focused' | 'competitor-focused'>('audit-focused');
   const [activeChannel, setActiveChannel] = useState<'email' | 'linkedin' | 'phone' | 'video'>('email');
   const [outreachCopy, setOutreachCopy] = useState<GeneratedOutreach>(() =>
-    generatePersonalizedOutreach(defaultLead, selectedAudit, 'audit-focused')
+    generatePersonalizedOutreach(defaultLead, effectiveAudit, 'audit-focused')
   );
   const [copied, setCopied] = useState<boolean>(false);
   const [customPrompt, setCustomPrompt] = useState<string>('');
   const [isGeneratingGemini, setIsGeneratingGemini] = useState<boolean>(false);
   const [rotStats, setRotStats] = useState(getRotationStats());
+  const [showKeyModal, setShowKeyModal] = useState<boolean>(false);
+  const [customKeyInput, setCustomKeyInput] = useState<string>(() => {
+    return localStorage.getItem('ai_deepseek_api_key') || localStorage.getItem('ai_gemini_api_key') || '';
+  });
+
+  // Mailing Agent Operator (Pam)
+  const outreachAgent = CHARACTERS.find(c => c.id === 'pam' || c.title.includes('Mailing')) || CHARACTERS[1];
+
+  const [agentLiveLog, setAgentLiveLog] = useState<string[]>([
+    `📧 [Mailing Agent ${outreachAgent.name}] Ready with 3 high-converting proposal angles for ${defaultLead.companyName}.`,
+    `✍️ [Mailing Agent ${outreachAgent.name}] Linked audit revenue leak data into personalized email sequences.`
+  ]);
 
   const streamOutreachCopy = (res: GeneratedOutreach) => {
     let charIndex = 0;
@@ -58,27 +79,40 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
     });
 
     const interval = setInterval(() => {
-      charIndex += 5;
-      if (charIndex >= fullBody.length && charIndex >= fullSubject.length) {
+      charIndex += 12;
+      setOutreachCopy(prev => ({
+        ...prev,
+        emailSubject: fullSubject,
+        emailBody: fullBody.slice(0, charIndex),
+      }));
+
+      if (charIndex >= fullBody.length) {
         clearInterval(interval);
-        setOutreachCopy(res);
-      } else {
-        setOutreachCopy({
-          ...res,
-          emailSubject: fullSubject.substring(0, Math.min(charIndex, fullSubject.length)),
-          emailBody: fullBody.substring(0, Math.min(charIndex, fullBody.length)),
-        });
+        setOutreachCopy(prev => ({
+          ...prev,
+          emailBody: fullBody,
+        }));
       }
     }, 15);
   };
 
   const handleGenerateGeminiCopy = async (selectedAngle = angle) => {
-    cartoonAudio.playPop(800);
+    cartoonAudio.playPop(700);
     setIsGeneratingGemini(true);
     try {
-      const res = await generateLiveOutreachWithGemini(defaultLead, selectedAudit, selectedAngle, customPrompt);
-      setRotStats(getRotationStats());
+      const res = await generateLiveOutreachWithGemini(defaultLead, effectiveAudit, selectedAngle, customPrompt);
       streamOutreachCopy(res);
+      setRotStats(getRotationStats());
+      setAgentLiveLog(prev => [
+        `✍️ [Mailing Agent ${outreachAgent.name}] Generated live customized copy for "${defaultLead.companyName}" (${selectedAngle})!`,
+        ...prev.slice(0, 4)
+      ]);
+      cartoonAudio.playSuccess();
+      confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    } catch (e) {
+      console.error(e);
+      const fallback = generatePersonalizedOutreach(defaultLead, effectiveAudit, selectedAngle);
+      setOutreachCopy(fallback);
     } finally {
       setIsGeneratingGemini(false);
     }
@@ -87,7 +121,24 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
   const handleAngleChange = (newAngle: 'audit-focused' | 'roi-focused' | 'competitor-focused') => {
     cartoonAudio.playPop();
     setAngle(newAngle);
-    setOutreachCopy(generatePersonalizedOutreach(defaultLead, selectedAudit, newAngle));
+    setOutreachCopy(generatePersonalizedOutreach(defaultLead, effectiveAudit, newAngle));
+  };
+
+  const handleSaveCustomKey = () => {
+    const trimmed = customKeyInput.trim();
+    if (!trimmed) return;
+    if (trimmed.startsWith('sk-')) {
+      localStorage.setItem('ai_deepseek_api_key', trimmed);
+    } else {
+      localStorage.setItem('ai_gemini_api_key', trimmed);
+    }
+    setRotStats(getRotationStats());
+    setShowKeyModal(false);
+    cartoonAudio.playSuccess();
+    setAgentLiveLog(prev => [
+      `🔑 [Mailing Agent ${outreachAgent.name}] Loaded custom live API key! Ready for AI generation.`,
+      ...prev.slice(0, 4)
+    ]);
   };
 
   const handleCopyText = (text: string) => {
@@ -100,27 +151,42 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
   const handleSendToSequencer = () => {
     cartoonAudio.playSuccess();
     onSendToSequencer(defaultLead, outreachCopy);
-    confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
   };
 
   return (
     <div className="w-full space-y-6">
       
-      {/* Top Banner */}
-      <div className="cartoon-card p-6 bg-gradient-to-r from-sky-100 via-purple-100 to-pink-100 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="cartoon-badge px-2.5 py-0.5 text-xs bg-sky-400 text-slate-900 rounded-full flex items-center gap-1 font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-sky-800" /> Module 3: AI Outreach & Copywriter
+      {/* Top Banner - Powered by Mailing Agent Pam */}
+      <div className="cartoon-card p-6 bg-gradient-to-r from-sky-100 via-pink-100 to-purple-100 flex flex-wrap items-center justify-between gap-4 border-4 border-slate-900 shadow-[6px_6px_0px_#0f172a] rounded-2xl">
+        <div className="space-y-2 max-w-2xl">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="cartoon-badge px-3 py-1 text-xs bg-sky-400 text-slate-900 rounded-full flex items-center gap-1.5 font-extrabold border border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a]">
+              <Sparkles className="w-3.5 h-3.5 text-sky-950" /> Module 3: AI Outreach & Copywriter
             </span>
-            <span className="text-xs font-mono font-bold text-slate-700">Audit-Driven Cold Email & Social Pitch</span>
+
+            {/* Mailing Agent Identity Badge */}
+            <span className="px-3 py-1 text-xs bg-white text-slate-900 font-extrabold rounded-full border-2 border-slate-900 flex items-center gap-1.5 shadow-[1.5px_1.5px_0px_#0f172a]">
+              <UserCheck className="w-3.5 h-3.5 text-pink-600" />
+              <span>OPERATED BY: {outreachAgent.name} ({outreachAgent.title})</span>
+            </span>
+
+            <span className="text-xs font-mono font-bold bg-slate-900 text-amber-300 px-2.5 py-1 rounded-full">
+              Cold Email • Proposals • Multi-Channel
+            </span>
           </div>
+
           <h2 className="font-heading text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
             AI Personalized Outreach Studio ✉️
           </h2>
-          <p className="text-xs md:text-sm text-slate-700 font-medium mt-1">
-            Generates high-converting cold emails, LinkedIn messages & sales call scripts customized with audit findings.
-          </p>
+
+          {/* Pam's Directive & Work Spec */}
+          <div className="p-2.5 bg-white/90 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-xs font-medium text-slate-800 flex items-center gap-2">
+            <span className="text-lg">📧</span>
+            <div>
+              <span className="font-extrabold text-slate-900">{outreachAgent.name}'s Directive:</span> "{outreachAgent.quote}"
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -130,7 +196,7 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
             className="px-4 py-3 bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-extrabold text-xs border-3 border-slate-900 rounded-xl shadow-[3px_3px_0px_#0f172a] flex items-center justify-center gap-2 transition-transform active:translate-y-0.5"
           >
             <RefreshCw className={`w-4 h-4 text-slate-900 ${isGeneratingGemini ? 'animate-spin' : ''}`} />
-            <span>{isGeneratingGemini ? 'Rotating Key & Generating...' : '⚡ Generate Live Copy with Gemini (50 Keys Pool)'}</span>
+            <span>{isGeneratingGemini ? `${outreachAgent.name} is Generating...` : `⚡ Generate Live Copy with ${outreachAgent.name}`}</span>
           </button>
 
           <button
@@ -143,25 +209,80 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
         </div>
       </div>
 
-      {/* Gemini Rotating Key Active Indicator Bar */}
-      <div className="cartoon-card p-3 bg-amber-100 border-2 border-slate-900 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
-        <div className="flex items-center gap-2 text-amber-900 font-bold">
-          <Key className="w-4 h-4 text-amber-700 animate-bounce" />
-          <span>Gemini Key Rotator Engine Active:</span>
-          <span className="px-2 py-0.5 bg-amber-300 border border-slate-900 rounded text-slate-900 font-extrabold">
-            Key #{rotStats.currentKeyIndex} of {rotStats.totalKeys} ({rotStats.activeKeyMasked})
-          </span>
+      {/* Pam's Live Agent Terminal Ticker */}
+      <div className="cartoon-card p-3 bg-slate-900 text-white border-2 border-slate-900 rounded-xl font-mono text-xs flex items-center gap-3">
+        <span className="text-xs font-bold px-2 py-0.5 bg-pink-400 text-slate-900 rounded border border-slate-900 shrink-0">
+          📧 {outreachAgent.name.toUpperCase()} LIVE LOG
+        </span>
+        <div className="truncate text-emerald-400 font-bold">
+          &gt; {agentLiveLog[0]}
         </div>
-        <div className="flex items-center gap-3 text-[11px] font-bold text-slate-700">
-          <span>🔄 Total Rotations: <strong>{rotStats.totalRotations}</strong></span>
-          <span className="text-emerald-700">✓ Success: <strong>{rotStats.successfulCalls}</strong></span>
-          {rotStats.failedCalls > 0 && <span className="text-rose-600">⚠ Failover Rotations: <strong>{rotStats.failedCalls}</strong></span>}
-          {outreachCopy.isLiveGemini && (
-            <span className="cartoon-badge px-2 py-0.5 bg-emerald-400 text-slate-900 rounded font-extrabold">
-              ⚡ Generated via Gemini Key #{outreachCopy.keyUsedIndex}
+      </div>
+
+      {/* Gemini / DeepSeek Key Active Indicator Bar */}
+      <div className="cartoon-card p-3 bg-amber-100 border-2 border-slate-900 space-y-2 text-xs font-mono">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-amber-900 font-bold">
+            <Key className="w-4 h-4 text-amber-700 animate-bounce" />
+            <span>AI Engine ({rotStats.provider}):</span>
+            <span className="px-2 py-0.5 bg-amber-300 border border-slate-900 rounded text-slate-900 font-extrabold">
+              Key #{rotStats.currentKeyIndex} of {rotStats.totalKeys} ({rotStats.activeKeyMasked})
             </span>
-          )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowKeyModal(!showKeyModal)}
+              className="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-900 font-bold border border-slate-900 rounded-lg shadow-[1px_1px_0px_#0f172a] text-[11px] flex items-center gap-1 cursor-pointer"
+            >
+              <Key className="w-3 h-3 text-amber-600" />
+              <span>{showKeyModal ? 'Close Key Settings' : '⚙️ Configure AI Key'}</span>
+            </button>
+            <div className="flex items-center gap-3 text-[11px] font-bold text-slate-700">
+              <span>🔄 Rotations: <strong>{rotStats.totalRotations}</strong></span>
+              <span className="text-emerald-700">✓ Success: <strong>{rotStats.successfulCalls}</strong></span>
+              {rotStats.failedCalls > 0 && <span className="text-rose-600">⚠ Failover: <strong>{rotStats.failedCalls}</strong></span>}
+            </div>
+          </div>
         </div>
+
+        {/* Inline Custom Key Form */}
+        {showKeyModal && (
+          <div className="p-3 bg-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] space-y-2 mt-2">
+            <div className="flex justify-between items-center text-slate-800 font-bold">
+              <span>Enter DeepSeek or Gemini API Key:</span>
+              <span className="text-[10px] text-slate-500 font-normal">Saved in local browser storage (100% private)</span>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="password"
+                value={customKeyInput}
+                onChange={(e) => setCustomKeyInput(e.target.value)}
+                placeholder="sk-... (DeepSeek) or AIzaSy... (Gemini)"
+                className="flex-1 px-3 py-1.5 text-xs font-mono bg-slate-50 border border-slate-900 rounded-lg text-slate-900"
+              />
+              <button
+                onClick={handleSaveCustomKey}
+                className="px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-extrabold rounded-lg border border-slate-900 shadow-[1px_1px_0px_#0f172a]"
+              >
+                Save & Activate
+              </button>
+              {customKeyInput && (
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('ai_deepseek_api_key');
+                    localStorage.removeItem('ai_gemini_api_key');
+                    setCustomKeyInput('');
+                    setRotStats(getRotationStats());
+                  }}
+                  className="px-2 py-1.5 bg-rose-200 hover:bg-rose-300 text-rose-900 font-bold rounded-lg border border-slate-900 text-[10px]"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Target Lead Summary Header */}
@@ -180,9 +301,9 @@ export const OutreachStudio: React.FC<OutreachStudioProps> = ({
           </div>
         </div>
 
-        {selectedAudit && (
+        {effectiveAudit && (
           <div className="px-3 py-1 bg-emerald-100 border border-slate-900 rounded-lg text-emerald-900 font-bold">
-            ✓ Audit Score: {selectedAudit.overallScore}/100 ({selectedAudit.loadTimeSeconds}s load time)
+            ✓ Live Audit Score: {effectiveAudit.overallScore}/100 ({effectiveAudit.loadTimeSeconds}s load time)
           </div>
         )}
       </div>

@@ -154,6 +154,155 @@ export const getRoleAdaptedTask = (char: CartoonCharacter, directive: string) =>
   return `Process specialized ${char.role} work for "${cleanDirective}"`;
 };
 
+export interface AgentRoleSpec {
+  workName: string;
+  roleBadge: string;
+  roleBadgeBg: string;
+  dutyTagline: string;
+  responsibilitySummary: string;
+  coreResponsibilities: string[];
+  deliverableLabel: string;
+  statusBadge: string;
+}
+
+export const getAgentRoleSpec = (char: CartoonCharacter): AgentRoleSpec => {
+  const title = char.title.toLowerCase();
+  const id = char.id.toLowerCase();
+
+  if (title.includes('bizdev') || title.includes('lead') || id === 'jim') {
+    return {
+      workName: 'Lead Generation',
+      roleBadge: '💼 Lead Gen & BizDev Specialist',
+      roleBadgeBg: 'bg-emerald-400 text-slate-900 border-slate-900',
+      dutyTagline: 'Scrapes target business clients, discovers verified emails & qualifies lead budgets',
+      responsibilitySummary: 'Scrapes new prospective clients, verifies email addresses and qualifies project deals.',
+      coreResponsibilities: ['Target Client Scraping', 'Lead Deal Qualification', 'Structured Lead Dossiers'],
+      deliverableLabel: '24 Verified Leads Dossier',
+      statusBadge: 'Scraping Live'
+    };
+  }
+  if (title.includes('mailing') || id === 'pam') {
+    return {
+      workName: 'Client Outreach & Emails',
+      roleBadge: '📧 Client Proposals & Cold Outreach',
+      roleBadgeBg: 'bg-pink-400 text-slate-900 border-slate-900',
+      dutyTagline: 'Drafts client quotes, sends outreach emails & schedules automated follow-up sequences',
+      responsibilitySummary: 'Drafts customized proposals, sends outreach emails and manages automated follow-ups.',
+      coreResponsibilities: ['Client Proposal Drafting', 'Automated Drip Follow-ups', 'Client Communication & FAQs'],
+      deliverableLabel: '18 Proposals & Follow-ups Sent',
+      statusBadge: 'Sequencer Active'
+    };
+  }
+  if (title.includes('manager') || id === 'michael') {
+    return {
+      workName: 'Floor Management',
+      roleBadge: '👑 Floor Director & Work Orchestrator',
+      roleBadgeBg: 'bg-amber-400 text-slate-900 border-slate-900',
+      dutyTagline: 'Delegates specialized tasks to all floor agents, enforces deadlines & compiles Boss reports',
+      responsibilitySummary: 'Dispatches directives to floor agents, tracks deadlines and produces executive reports.',
+      coreResponsibilities: ['Role Task Delegation', 'Deadline Enforcement', 'Executive Briefings for Boss'],
+      deliverableLabel: 'Executive Daily Briefing Ready',
+      statusBadge: 'Floor Orchestration'
+    };
+  }
+  if (title.includes('research') || id === 'dwight') {
+    return {
+      workName: 'Competitor Research',
+      roleBadge: '🔎 Competitor & Market Research',
+      roleBadgeBg: 'bg-yellow-400 text-slate-900 border-slate-900',
+      dutyTagline: 'Audits competitor pricing models, market intelligence, website specs & requirements',
+      responsibilitySummary: 'Analyzes competitor pricing models, technical specifications and market intelligence.',
+      coreResponsibilities: ['Competitor Pricing Audits', 'Market Intelligence Analysis', 'Technical Brief Synthesis'],
+      deliverableLabel: 'Competitor Intel Brief Ready',
+      statusBadge: 'Auditing Competitors'
+    };
+  }
+  if (title.includes('operations') || title.includes('client') || id === 'angela') {
+    return {
+      workName: 'Client Operations',
+      roleBadge: '📋 Client Onboarding & Task QA',
+      roleBadgeBg: 'bg-purple-400 text-slate-900 border-slate-900',
+      dutyTagline: 'Manages new client onboarding workflows, milestone QA tracking & delivery checklists',
+      responsibilitySummary: 'Manages client onboarding pipelines, milestone checklists and task deliverables QA.',
+      coreResponsibilities: ['Client Onboarding Workflows', 'Milestone QA Tracking', 'Delivery Checklists'],
+      deliverableLabel: '12/12 Milestones Verified',
+      statusBadge: 'Checklist 100% OK'
+    };
+  }
+  if (title.includes('resource') || title.includes('budget') || id === 'kevin') {
+    return {
+      workName: 'Cost & Budget Tracking',
+      roleBadge: '📊 Cost, Margin & Token Analyst',
+      roleBadgeBg: 'bg-orange-400 text-slate-900 border-slate-900',
+      dutyTagline: 'Calculates LLM token savings, tracks resource expenses & optimizes project billing margins',
+      responsibilitySummary: 'Monitors model token usage, computes infrastructure savings and ensures healthy margins.',
+      coreResponsibilities: ['Token Expenditure Math', 'Local Model Savings ($1,250)', 'Client Billing Margins'],
+      deliverableLabel: '+42% Profit Margin ($1,250 Saved)',
+      statusBadge: 'Token Saver Active'
+    };
+  }
+  if (title.includes('content') || title.includes('marketing') || id === 'stanley') {
+    return {
+      workName: 'Marketing & Campaigns',
+      roleBadge: '📢 Marketing & Campaign Strategist',
+      roleBadgeBg: 'bg-teal-400 text-slate-900 border-slate-900',
+      dutyTagline: 'Develops promotional social calendars, marketing concepts & conversion landing page copy',
+      responsibilitySummary: 'Creates promotional marketing campaigns, content calendars and high-converting landing page copy.',
+      coreResponsibilities: ['Social Media Calendars', 'High-Converting Copy', 'Campaign Strategy'],
+      deliverableLabel: 'Promotional Campaign Plan',
+      statusBadge: 'Writing Copy'
+    };
+  }
+  if (title.includes('outreach') || id === 'andy') {
+    return {
+      workName: 'Proposal Pitching',
+      roleBadge: '🎤 Proposal Pitching & Client Voice',
+      roleBadgeBg: 'bg-indigo-400 text-slate-900 border-slate-900',
+      dutyTagline: 'Conducts introductory client onboarding presentations & charismatic proposal pitching',
+      responsibilitySummary: 'Conducts live proposal pitching and introductory client presentation calls.',
+      coreResponsibilities: ['Proposal Pitching', 'Introductory Client Calls', 'Voice Presentations'],
+      deliverableLabel: 'Pitch Presentation Ready',
+      statusBadge: 'Pitching Active'
+    };
+  }
+  if (title.includes('financial') || id === 'oscar') {
+    return {
+      workName: 'Financial Auditing',
+      roleBadge: '💼 Financial & Deal Auditor',
+      roleBadgeBg: 'bg-cyan-400 text-slate-900 border-slate-900',
+      dutyTagline: 'Fact-checks deal margins, contract pricing benchmarks & agency expenditure ledgers',
+      responsibilitySummary: 'Audits contract profitability margins, pricing benchmarks and financial statements.',
+      coreResponsibilities: ['Pricing Benchmarks', 'Contract Margin Audit', 'Financial Ledgers'],
+      deliverableLabel: 'Financial Audit Ledger',
+      statusBadge: 'Auditing Margins'
+    };
+  }
+  if (id === 'cyber') {
+    return {
+      workName: 'Autonomous Pipeline',
+      roleBadge: '🤖 Autonomous Pipeline Orchestrator',
+      roleBadgeBg: 'bg-emerald-400 text-slate-900 border-slate-900',
+      dutyTagline: 'Runs continuous 24/7 background scraping, automated email queues & checklist sync',
+      responsibilitySummary: 'Executes automated 24/7 client discovery, mail queues and task checklist synchronization.',
+      coreResponsibilities: ['Continuous Scraping', 'Mail Queue Dispatch', 'Real-time Sync'],
+      deliverableLabel: 'Autonomous Pipeline Active',
+      statusBadge: '24/7 Engine Active'
+    };
+  }
+
+  return {
+    workName: char.role || char.title || 'Specialized Agent Work',
+    roleBadge: `🎯 ${char.role}`,
+    roleBadgeBg: 'bg-amber-300 text-slate-900 border-slate-900',
+    dutyTagline: `Specialized ${char.role} execution & task delivery in isolated container`,
+    responsibilitySummary: `Executes specialized ${char.role} tasks and delivers role-specific project deliverables.`,
+    coreResponsibilities: [`${char.role} Tasks`, 'Autonomous Execution', 'Progress Reporting'],
+    deliverableLabel: 'Task Output In Progress',
+    statusBadge: 'Active Worker'
+  };
+};
+
+
 export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
   onOpenHarnessStudio,
   onOpenAddAgent,
@@ -418,14 +567,14 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
         })
       );
 
-      // Random office chatter over employee heads
+      // Random office chatter over employee heads showing specific active work
       const chatterOptions = [
-        { id: 'jim', text: 'Antigravity 2.0 writing code... 💻' },
-        { id: 'pam', text: 'Claude Code swatches ready! 🎨' },
-        { id: 'michael', text: "Codex: That's what she said! 😂" },
-        { id: 'dwight', text: 'Grok security scan 100% clean! ✕' },
-        { id: 'angela', text: 'Copilot unit tests: 100% 🐱' },
-        { id: 'kevin', text: 'Qwen token math: 420k saved! ❖' }
+        { id: 'jim', text: '💼 Scraping 24 verified enterprise leads...' },
+        { id: 'pam', text: '📧 Sending 18 client proposal emails...' },
+        { id: 'michael', text: '👑 Floor orchestration active & report ready!' },
+        { id: 'dwight', text: '🔎 Auditing competitor pricing models...' },
+        { id: 'angela', text: '📋 Client onboarding checklist verified!' },
+        { id: 'kevin', text: '📊 420k tokens saved ($1,250 margin)!' }
       ];
       const randomChat = chatterOptions[Math.floor(Math.random() * chatterOptions.length)];
       setActiveFloorSpeech(prev => ({
@@ -1035,69 +1184,99 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
             </div>
 
             {/* Manager Desk Card */}
-            <div
-              onClick={() => handleSelectDesk(managerEmployee)}
-              className={`cartoon-card p-3.5 cursor-pointer transition-all border-3 border-slate-900 rounded-xl ${
-                selectedDeskId === managerEmployee.character.id
-                  ? 'bg-amber-100 ring-4 ring-slate-900 -translate-y-0.5 shadow-[6px_6px_0px_#0f172a]'
-                  : 'bg-white hover:bg-amber-50 shadow-[3px_3px_0px_#0f172a]'
-              }`}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-                
-                {/* Left: Manager Avatar & Title (4 cols) */}
-                <div className="md:col-span-4 flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-2xl bg-amber-400 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] overflow-hidden shrink-0 relative animate-float">
-                    <div dangerouslySetInnerHTML={{ __html: managerEmployee.character.avatarSvg }} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1">
-                      <h4 className="font-heading font-extrabold text-base text-slate-900">
-                        {managerEmployee.character.name}
-                      </h4>
-                      <span className="text-xs">👑</span>
+            {(() => {
+              const mgrSpec = getAgentRoleSpec(managerEmployee.character);
+              return (
+                <div
+                  onClick={() => handleSelectDesk(managerEmployee)}
+                  className={`cartoon-card p-4 cursor-pointer transition-all border-3 border-slate-900 rounded-2xl ${
+                    selectedDeskId === managerEmployee.character.id
+                      ? 'bg-amber-100 ring-4 ring-slate-900 -translate-y-0.5 shadow-[6px_6px_0px_#0f172a]'
+                      : 'bg-white hover:bg-amber-50 shadow-[3px_3px_0px_#0f172a]'
+                  }`}
+                >
+                  {/* WORK NAME AT THE VERY TOP */}
+                  <div className="mb-3 px-3.5 py-2 bg-gradient-to-r from-amber-300 via-amber-200 to-amber-300 border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-[9px] font-mono font-black uppercase px-2 py-0.5 bg-slate-900 text-amber-300 rounded border border-slate-900 shrink-0 shadow-[1px_1px_0px_#0f172a]">
+                        WORK
+                      </span>
+                      <h3 className="font-heading font-black text-xs sm:text-sm text-slate-900 leading-tight">
+                        {mgrSpec.workName}
+                      </h3>
                     </div>
-                    <p className="text-[11px] font-bold text-amber-800 uppercase font-heading">
-                      {managerEmployee.character.title}
-                    </p>
-                    <span className="font-mono text-[9px] font-bold px-2 py-0.5 bg-amber-300 border border-slate-900 rounded-full text-slate-900 mt-1 inline-block">
-                      {managerEmployee.aiEngine.logoText} {managerEmployee.aiEngine.name}
+                    <span className="text-[9px] font-mono font-bold px-2 py-0.5 bg-white border border-slate-900 rounded-full text-slate-900 shrink-0 shadow-[1px_1px_0px_#0f172a]">
+                      👑 Manager
                     </span>
                   </div>
-                </div>
 
-                {/* Center: Live Executive Screen Output (5 cols) */}
-                <div className="md:col-span-5 bg-slate-900 rounded-xl p-2.5 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] font-mono text-xs text-emerald-400">
-                  <div className="flex justify-between text-[8px] text-slate-400 pb-1 mb-1 border-b border-slate-800">
-                    <span className="text-amber-400 font-bold">🖥️ DIRECTOR EXECUTIVE SCREEN</span>
-                    <span className="text-emerald-400 font-bold">{managerEmployee.linesOfCode} LOC</span>
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                    
+                    {/* Left: Manager Avatar & Title (4 cols) */}
+                    <div className="md:col-span-4 flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-2xl bg-amber-400 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] overflow-hidden shrink-0 relative animate-float">
+                        <div dangerouslySetInnerHTML={{ __html: managerEmployee.character.avatarSvg }} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1">
+                          <h4 className="font-heading font-extrabold text-base text-slate-900">
+                            {managerEmployee.character.name}
+                          </h4>
+                          <span className="text-xs">👑</span>
+                          <span className="text-[8px] font-bold font-mono px-1.5 py-0.2 rounded-full bg-emerald-300 text-emerald-950 border border-emerald-600">
+                            🟢 FLOOR SUPERVISOR
+                          </span>
+                        </div>
+                        <p className="text-[9.5px] text-slate-700 font-medium leading-tight mt-0.5">
+                          {mgrSpec.dutyTagline}
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <span className="font-mono text-[9px] font-bold px-2 py-0.5 bg-amber-300 border border-slate-900 rounded-full text-slate-900 inline-block shadow-[1px_1px_0px_#0f172a]">
+                            {managerEmployee.aiEngine.logoText} {managerEmployee.aiEngine.name}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Center: Live Executive Screen Output (5 cols) */}
+                    <div className="md:col-span-5 bg-slate-900 rounded-xl p-3 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] font-mono text-xs text-emerald-400 space-y-1">
+                      <div className="flex justify-between text-[8px] text-slate-400 pb-1 border-b border-slate-800">
+                        <span className="text-amber-400 font-bold">🖥️ DIRECTOR SCREEN</span>
+                        <span className="text-emerald-400 font-bold">{managerEmployee.linesOfCode} LOC</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[9px] text-amber-300 font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" />
+                        <span className="truncate">TASK: {managerEmployee.currentTask}</span>
+                      </div>
+                      <p className="text-[9px] text-slate-300 truncate">
+                        &gt; {managerEmployee.screenOutput.split('\n')[0]}
+                      </p>
+                      <div className="pt-1 border-t border-slate-800 flex items-center justify-between text-[8.5px] text-slate-400">
+                        <span>Workforce: {workerEmployees.length} Desks</span>
+                        <span className="text-amber-300">Deliverables: Briefing</span>
+                      </div>
+                    </div>
+
+                    {/* Right: Speech & Action (3 cols) */}
+                    <div className="md:col-span-3 text-right space-y-2">
+                      <div className="speech-bubble-left px-2.5 py-1 text-[10px] font-bold text-slate-900 animate-smooth-bounce inline-block text-left">
+                        "{activeFloorSpeech[managerEmployee.character.id] || managerEmployee.character.quote.slice(0, 35) + "..."}"
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectDesk(managerEmployee);
+                        }}
+                        className="w-full py-1.5 text-[11px] font-extrabold font-heading bg-amber-400 hover:bg-amber-300 text-slate-900 border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a]"
+                      >
+                        Select Manager Desk ⚙️
+                      </button>
+                    </div>
+
                   </div>
-                  <p className="text-[9px] text-amber-300 font-bold truncate">
-                    &gt; Task: {managerEmployee.currentTask}
-                  </p>
-                  <p className="text-[9px] text-emerald-400 truncate mt-0.5">
-                    &gt; {managerEmployee.screenOutput.split('\n')[0]}
-                  </p>
                 </div>
-
-                {/* Right: Speech & Action (3 cols) */}
-                <div className="md:col-span-3 text-right space-y-1.5">
-                  <div className="speech-bubble-left px-2.5 py-1 text-[10px] font-bold text-slate-900 animate-smooth-bounce inline-block text-left">
-                    "{activeFloorSpeech[managerEmployee.character.id] || managerEmployee.character.quote.slice(0, 35) + "..."}"
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSelectDesk(managerEmployee);
-                    }}
-                    className="w-full py-1 text-[11px] font-extrabold font-heading bg-amber-400 hover:bg-amber-300 text-slate-900 border-2 border-slate-900 rounded-lg shadow-[2px_2px_0px_#0f172a]"
-                  >
-                    Select Manager Desk ⚙️
-                  </button>
-                </div>
-
-              </div>
-            </div>
+              );
+            })()}
 
           </div>
 
@@ -1110,7 +1289,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
               </span>
             </h4>
             <span className="text-[10px] text-slate-600 font-medium hidden sm:inline">
-              Click desk to inspect monitor output & assign task
+              Click any desk to inspect monitor output & assign tasks
             </span>
           </div>
 
@@ -1119,81 +1298,95 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
             {workerEmployees.map((emp, index) => {
               const isSelected = selectedDeskId === emp.character.id;
               const speech = activeFloorSpeech[emp.character.id];
+              const spec = getAgentRoleSpec(emp.character);
 
               return (
                 <div
                   key={emp.character.id}
                   onClick={() => handleSelectDesk(emp)}
-                  className={`cartoon-card p-3.5 cursor-pointer transition-all relative flex flex-col justify-between h-full border-3 border-slate-900 ${
+                  className={`cartoon-card p-4 cursor-pointer transition-all relative flex flex-col justify-between h-full border-3 border-slate-900 rounded-2xl ${
                     isSelected
                       ? `${emp.character.bgColor} ring-4 ring-slate-900 -translate-y-1 shadow-[8px_8px_0px_#0f172a]`
-                      : 'bg-white hover:bg-slate-50'
+                      : 'bg-white hover:bg-slate-50 shadow-[4px_4px_0px_#0f172a]'
                   }`}
                 >
-                  {/* Desk Header with Active Working AI Badge */}
-                  <div className="flex justify-between items-center mb-2 shrink-0">
-                    <span className="font-heading text-[10px] font-extrabold px-2 py-0.5 bg-slate-900 text-amber-300 rounded border border-slate-900 truncate max-w-[60%]">
-                      DESK {index + 1} • {emp.character.name.toUpperCase()}
-                    </span>
-                    <span className="font-mono text-[9px] font-bold px-2 py-0.5 bg-amber-300 border border-slate-900 rounded-full text-slate-900 flex items-center gap-1 shrink-0">
-                      <span>{emp.aiEngine.logoText}</span>
-                      <span>{emp.aiEngine.name}</span>
-                    </span>
-                  </div>
-
-                  {/* Fixed-Height Speech Bubble Reserved Slot */}
-                  <div className="h-8 mb-2 flex items-center shrink-0">
-                    {speech ? (
-                      <div className="speech-bubble-left w-full px-2.5 py-1 text-[10px] font-bold text-slate-900 animate-smooth-bounce truncate">
-                        {speech}
-                      </div>
-                    ) : (
-                      <div className="w-full h-full" />
-                    )}
-                  </div>
-
-                  {/* Cartoon Workstation Illustration: Chair + Sitting Employee + Computer Desk */}
-                  <div className="bg-slate-100 p-3 rounded-xl border-2 border-slate-900 relative my-1 text-center flex flex-col justify-between h-[175px] shrink-0">
-                    
-                    {/* Glowing Dual Monitor Screen */}
-                    <div className="bg-slate-900 rounded-lg p-2 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-2 relative shrink-0">
-                      <div className="flex justify-between items-center text-[8px] font-mono text-slate-400 pb-1 mb-1 border-b border-slate-700">
-                        <span className="flex items-center gap-1 text-amber-400 font-bold">
-                          <Monitor className="w-2.5 h-2.5" /> {emp.aiEngine.name}
+                  {/* Top Desk Header with Work Name & Engine */}
+                  <div>
+                    {/* ⚡ WORK NAME PROMINENTLY AT THE VERY TOP OF THE AGENT ⚡ */}
+                    <div className="mb-2 px-2.5 py-1.5 bg-gradient-to-r from-amber-300 via-amber-200 to-amber-300 border-2 border-slate-900 rounded-xl shadow-[2px_2px_0px_#0f172a] flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-[9px] font-mono font-black uppercase px-1.5 py-0.5 bg-slate-900 text-amber-300 rounded border border-slate-900 shrink-0 shadow-[1px_1px_0px_#0f172a]">
+                          WORK
                         </span>
-                        <span className="text-emerald-400">{emp.linesOfCode} LOC</span>
-                      </div>
-                      <p className="font-mono text-[9px] text-emerald-400 truncate text-left">
-                        &gt; {emp.screenOutput.split('\n')[0]}
-                      </p>
-                    </div>
-
-                    {/* Sitting Cartoon Employee & Ergonomic Office Chair */}
-                    <div className="flex items-center justify-center gap-2 relative h-[65px] shrink-0">
-                      <div className="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-slate-900 absolute -z-0 top-0 shadow-[2px_2px_0px_#0f172a]" />
-
-                      <div
-                        className="w-12 h-12 rounded-xl border-2 border-slate-900 bg-white overflow-hidden relative z-10 animate-float"
-                        dangerouslySetInnerHTML={{ __html: emp.character.avatarSvg }}
-                      />
-
-                      <div className="w-12 h-3 bg-slate-300 border border-slate-900 rounded flex items-center justify-center text-[7px] font-mono font-bold text-slate-700 animate-smooth-pulse">
-                        ⌨️ TYPING
+                        <h4 className="font-heading font-black text-xs md:text-sm text-slate-900 leading-tight">
+                          {spec.workName}
+                        </h4>
                       </div>
                     </div>
 
+                    <div className="flex items-center justify-between gap-1 mb-2 flex-wrap">
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="font-heading text-[9.5px] font-black px-2 py-0.5 bg-slate-900 text-amber-300 rounded border border-slate-900 shrink-0 whitespace-nowrap shadow-[1px_1px_0px_#0f172a]">
+                          DESK {index + 1}: {emp.character.name}
+                        </span>
+                        <span className="text-[8px] font-bold font-mono px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-500 flex items-center gap-1 shrink-0">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block" />
+                          <span>{spec.statusBadge}</span>
+                        </span>
+                      </div>
+                      <span className="font-mono text-[8.5px] font-bold px-1.5 py-0.5 bg-white border border-slate-900 rounded-full text-slate-900 flex items-center gap-1 shrink-0 shadow-[1px_1px_0px_#0f172a]">
+                        <span>{emp.aiEngine.logoText}</span>
+                        <span>{emp.aiEngine.name}</span>
+                      </span>
+                    </div>
+
+                    {/* Fixed-Height Speech Bubble */}
+                    <div className="h-8 mb-2 flex items-center">
+                      {speech ? (
+                        <div className="speech-bubble-left w-full px-2.5 py-1 text-[10px] font-bold text-slate-900 animate-smooth-bounce truncate">
+                          "{speech}"
+                        </div>
+                      ) : (
+                        <div className="w-full h-full" />
+                      )}
+                    </div>
+
+                    {/* Cartoon Workstation Illustration */}
+                    <div className="bg-slate-100 p-3 rounded-xl border-2 border-slate-900 relative my-1 text-center flex flex-col justify-between">
+                      {/* Glowing Dual Monitor Screen with Live Task Info */}
+                      <div className="bg-slate-900 rounded-lg p-2.5 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-2 font-mono text-left">
+                        <div className="flex justify-between items-center text-[8px] text-slate-400 pb-1 mb-1 border-b border-slate-700">
+                          <span className="flex items-center gap-1 text-amber-400 font-bold">
+                            <Monitor className="w-2.5 h-2.5" /> {emp.aiEngine.name} SCREEN
+                          </span>
+                          <span className="text-emerald-400 font-bold">{emp.linesOfCode} LOC</span>
+                        </div>
+                        <p className="text-[9px] text-emerald-400 font-bold truncate">
+                          &gt; {emp.screenOutput.split('\n')[0]}
+                        </p>
+                        <p className="text-[8px] text-slate-300 truncate mt-0.5">
+                          &gt; {emp.screenOutput.split('\n')[1] || `Running in isolated sandbox container`}
+                        </p>
+                      </div>
+
+                      {/* Sitting Cartoon Employee & Chair */}
+                      <div className="flex items-center justify-center gap-2 relative h-[65px]">
+                        <div className="w-14 h-14 rounded-2xl bg-slate-800 border-2 border-slate-900 absolute -z-0 top-0 shadow-[2px_2px_0px_#0f172a]" />
+                        <div
+                          className="w-12 h-12 rounded-xl border-2 border-slate-900 bg-white overflow-hidden relative z-10 animate-float"
+                          dangerouslySetInnerHTML={{ __html: emp.character.avatarSvg }}
+                        />
+                        <div className="w-14 h-4 bg-slate-300 border border-slate-900 rounded flex items-center justify-center text-[8px] font-mono font-bold text-slate-800 animate-smooth-pulse shadow-[1px_1px_0px_#0f172a]">
+                          ⌨️ WORKING
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Employee Role & Active Task */}
-                  <div className="mt-2 text-left shrink-0">
-                    <div className="flex justify-between items-center">
-                      <h4 className="font-heading font-extrabold text-xs text-slate-900 truncate">
-                        {emp.character.title}
-                      </h4>
-                    </div>
-                    <p className="text-[10px] text-slate-600 font-medium truncate mt-0.5" title={emp.currentTask}>
-                      📌 {emp.currentTask}
-                    </p>
+                  {/* Clean Bottom Status Bar */}
+                  <div className="mt-2.5 flex items-center justify-between text-[9px] font-mono font-bold text-slate-700 bg-amber-50 px-2.5 py-1.5 rounded-lg border border-slate-300">
+                    <span className="truncate">Task: {emp.currentTask}</span>
+                    <span className="text-amber-800 shrink-0 ml-1">Inspect ⚙️</span>
                   </div>
 
                 </div>
@@ -1206,7 +1399,7 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                 cartoonAudio.playPop();
                 onOpenAddAgent();
               }}
-              className="cartoon-card p-3.5 cursor-pointer transition-all relative flex flex-col justify-between h-full border-3 border-dashed border-slate-900 bg-amber-50 hover:bg-amber-100 group shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1"
+              className="cartoon-card p-4 cursor-pointer transition-all relative flex flex-col justify-between h-full border-3 border-dashed border-slate-900 bg-amber-50 hover:bg-amber-100 group shadow-[4px_4px_0px_#0f172a] hover:-translate-y-1 rounded-2xl"
             >
               <div className="flex justify-between items-center mb-2 shrink-0">
                 <span className="font-heading text-[10px] font-extrabold px-2 py-0.5 bg-amber-400 text-slate-900 rounded border border-slate-900">
@@ -1220,20 +1413,20 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
               {/* Reserved height matching speech bubble slot */}
               <div className="h-8 mb-2 shrink-0" />
 
-              <div className="bg-white/80 p-3 rounded-xl border-2 border-dashed border-slate-900 text-center my-1 flex flex-col items-center justify-center h-[175px] shrink-0">
-                <div className="w-12 h-12 rounded-2xl bg-amber-400 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition-transform mb-2">
+              <div className="bg-white/80 p-4 rounded-xl border-2 border-dashed border-slate-900 text-center my-2 flex flex-col items-center justify-center h-[200px] shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-amber-400 border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] flex items-center justify-center text-3xl font-bold group-hover:scale-110 transition-transform mb-3">
                   ✨
                 </div>
-                <h4 className="font-heading font-extrabold text-xs text-slate-900">
+                <h4 className="font-heading font-extrabold text-sm text-slate-900">
                   + Add Custom Agent
                 </h4>
-                <p className="text-[9px] text-slate-600 font-medium mt-1">
-                  Choose avatar & AI engine
+                <p className="text-[10px] text-slate-600 font-medium mt-1">
+                  Choose avatar, role specialization & AI engine
                 </p>
               </div>
 
-              <div className="mt-2 text-center shrink-0 flex items-center justify-center">
-                <span className="text-[10px] font-extrabold text-amber-900 font-heading bg-amber-300 px-3 py-1 rounded-full border border-slate-900 shadow-[1px_1px_0px_#0f172a]">
+              <div className="mt-3 text-center shrink-0 flex items-center justify-center">
+                <span className="text-[10px] font-extrabold text-amber-900 font-heading bg-amber-300 px-3.5 py-1.5 rounded-full border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
                   + Spin Up Harness
                 </span>
               </div>
@@ -1506,6 +1699,46 @@ export const OfficeSpace: React.FC<OfficeSpaceProps> = ({
                   </p>
                 </div>
               </div>
+
+              {/* Agent Role & Responsibilities Breakdown */}
+              {(() => {
+                const inspSpec = getAgentRoleSpec(selectedEmployee.character);
+                return (
+                  <div className="p-3 bg-slate-900 text-white rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_#0f172a] mb-4 space-y-2">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-heading font-black text-xs text-amber-300">
+                        {inspSpec.roleBadge}
+                      </span>
+                      <span className="text-[8px] font-mono px-1.5 py-0.5 rounded bg-emerald-400 text-slate-900 font-extrabold">
+                        {inspSpec.statusBadge}
+                      </span>
+                    </div>
+
+                    <p className="text-[10px] text-slate-200 font-medium leading-tight">
+                      {inspSpec.dutyTagline}
+                    </p>
+
+                    <div className="p-2 bg-slate-950 rounded-lg border border-slate-800 text-[9.5px]">
+                      <span className="text-amber-400 font-bold block mb-0.5">🎯 Core Responsibility:</span>
+                      <span className="text-slate-300">{inspSpec.responsibilitySummary}</span>
+                    </div>
+
+                    {/* Core Responsibilities Pills */}
+                    <div className="flex flex-wrap gap-1">
+                      {inspSpec.coreResponsibilities.map((resp, idx) => (
+                        <span key={idx} className="text-[8.5px] font-mono font-bold bg-slate-800 text-emerald-300 px-1.5 py-0.5 rounded border border-slate-700">
+                          ✓ {resp}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between text-[9px] font-mono">
+                      <span className="text-slate-400">Current Output:</span>
+                      <span className="text-amber-300 font-bold">📦 {inspSpec.deliverableLabel}</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Working AI Engine Info */}
               <div className="p-3 bg-amber-50 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] mb-4 space-y-1.5">

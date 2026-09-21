@@ -78,7 +78,11 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-slate-700 hover:bg-slate-200'
             }`}
           >
-            <Search className="w-3.5 h-3.5" /> 🎯 Lead Hunter
+            <Search className="w-3.5 h-3.5" />
+            <span>🎯 Lead Hunter</span>
+            <span className="text-[10px] font-mono font-black px-1.5 py-0.2 rounded-full bg-amber-300 text-slate-900 border border-slate-900 ml-0.5">
+              Jim 💼
+            </span>
           </button>
 
           <button
@@ -92,7 +96,11 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-slate-700 hover:bg-slate-200'
             }`}
           >
-            <Gauge className="w-3.5 h-3.5" /> 🔍 Website Audit
+            <Gauge className="w-3.5 h-3.5" />
+            <span>🔍 Website Audit</span>
+            <span className="text-[10px] font-mono font-black px-1.5 py-0.2 rounded-full bg-emerald-300 text-slate-900 border border-slate-900 ml-0.5">
+              Dwight 🔎
+            </span>
           </button>
 
           <button
@@ -106,7 +114,11 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-slate-700 hover:bg-slate-200'
             }`}
           >
-            <Mail className="w-3.5 h-3.5" /> ✉️ Outreach Copy
+            <Mail className="w-3.5 h-3.5" />
+            <span>✉️ Outreach Copy</span>
+            <span className="text-[10px] font-mono font-black px-1.5 py-0.2 rounded-full bg-sky-300 text-slate-900 border border-slate-900 ml-0.5">
+              Pam 📧
+            </span>
           </button>
 
           <button
@@ -120,7 +132,11 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-slate-700 hover:bg-slate-200'
             }`}
           >
-            <RefreshCw className="w-3.5 h-3.5" /> 🔄 Sequencer
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>🔄 Sequencer</span>
+            <span className="text-[10px] font-mono font-black px-1.5 py-0.2 rounded-full bg-purple-300 text-slate-900 border border-slate-900 ml-0.5">
+              Pam 🔄
+            </span>
           </button>
 
           <button
@@ -134,7 +150,11 @@ export const Header: React.FC<HeaderProps> = ({
                 : 'text-slate-700 hover:bg-slate-200'
             }`}
           >
-            <BarChart3 className="w-3.5 h-3.5" /> 📊 Sales CRM
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>📊 Sales CRM</span>
+            <span className="text-[10px] font-mono font-black px-1.5 py-0.2 rounded-full bg-pink-300 text-slate-900 border border-slate-900 ml-0.5">
+              Angela 📋
+            </span>
           </button>
 
         </div>

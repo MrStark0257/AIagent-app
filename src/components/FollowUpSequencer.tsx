@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { Lead } from '../services/leadScraper';
 import type { GeneratedOutreach } from '../services/outreachGenerator';
-import { Play, Sparkles } from 'lucide-react';
+import { Play, Sparkles, UserCheck } from 'lucide-react';
+import { CHARACTERS } from '../data/characters';
 import { cartoonAudio } from '../utils/audio';
 import confetti from 'canvas-confetti';
 
@@ -41,6 +42,14 @@ export const FollowUpSequencer: React.FC<FollowUpSequencerProps> = ({
     status: 'contacted',
     leadScore: 88,
   };
+
+  // Mailing & Follow-up Sequencer Operator (Pam)
+  const sequenceAgent = CHARACTERS.find(c => c.id === 'pam' || c.title.includes('Mailing')) || CHARACTERS[1];
+
+  const [agentLiveLog, setAgentLiveLog] = useState<string[]>([
+    `🔄 [Sequencer Agent ${sequenceAgent.name}] 4-touch drip automation queue synchronized for ${lead.companyName}.`,
+    `📬 [Sequencer Agent ${sequenceAgent.name}] Monitoring inbox for prospect reply to auto-trigger demo scheduling.`
+  ]);
 
   const [steps, setSteps] = useState<StepItem[]>([
     {
@@ -86,6 +95,10 @@ export const FollowUpSequencer: React.FC<FollowUpSequencerProps> = ({
       setSteps((prev) =>
         prev.map((s) => (s.dayNumber === 3 ? { ...s, status: 'sent' } : s))
       );
+      setAgentLiveLog(prev => [
+        `📬 [Sequencer Agent ${sequenceAgent.name}] Dispatched Day 3 quick nudge to ${lead.contactName}...`,
+        ...prev.slice(0, 4)
+      ]);
     }, 1200);
 
     // Step 3 sent & Prospect Replies!
@@ -96,6 +109,10 @@ export const FollowUpSequencer: React.FC<FollowUpSequencerProps> = ({
       );
       setProspectReplied(true);
       setIsSimulating(false);
+      setAgentLiveLog(prev => [
+        `🎉 [Sequencer Agent ${sequenceAgent.name}] Prospect replied! "${lead.companyName}" interested in booking demo call!`,
+        ...prev.slice(0, 4)
+      ]);
       confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
     }, 2800);
   };
@@ -103,21 +120,36 @@ export const FollowUpSequencer: React.FC<FollowUpSequencerProps> = ({
   return (
     <div className="w-full space-y-6">
       
-      {/* Top Banner */}
-      <div className="cartoon-card p-6 bg-gradient-to-r from-purple-100 via-pink-100 to-amber-100 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="cartoon-badge px-2.5 py-0.5 text-xs bg-purple-400 text-slate-900 rounded-full flex items-center gap-1 font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-purple-800" /> Module 4: Follow-up Drip Sequencer
+      {/* Top Banner - Powered by Sequencer Agent Pam */}
+      <div className="cartoon-card p-6 bg-gradient-to-r from-purple-100 via-pink-100 to-amber-100 flex flex-wrap items-center justify-between gap-4 border-4 border-slate-900 shadow-[6px_6px_0px_#0f172a] rounded-2xl">
+        <div className="space-y-2 max-w-2xl">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <span className="cartoon-badge px-3 py-1 text-xs bg-purple-400 text-slate-900 rounded-full flex items-center gap-1.5 font-extrabold border border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a]">
+              <Sparkles className="w-3.5 h-3.5 text-purple-950" /> Module 4: Follow-up Drip Sequencer
             </span>
-            <span className="text-xs font-mono font-bold text-slate-700">4-Touch Automated Drip</span>
+
+            {/* Sequencer Agent Identity Badge */}
+            <span className="px-3 py-1 text-xs bg-white text-slate-900 font-extrabold rounded-full border-2 border-slate-900 flex items-center gap-1.5 shadow-[1.5px_1.5px_0px_#0f172a]">
+              <UserCheck className="w-3.5 h-3.5 text-purple-600" />
+              <span>OPERATED BY: {sequenceAgent.name} ({sequenceAgent.title})</span>
+            </span>
+
+            <span className="text-xs font-mono font-bold bg-slate-900 text-amber-300 px-2.5 py-1 rounded-full">
+              4-Touch Automated Drip
+            </span>
           </div>
+
           <h2 className="font-heading text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
             Automated Drip & Response Manager 🔄
           </h2>
-          <p className="text-xs md:text-sm text-slate-700 font-medium mt-1">
-            Runs 14-day automated email sequences. Auto-detects prospect replies & triggers AI smart booking responses.
-          </p>
+
+          {/* Pam's Directive & Work Spec */}
+          <div className="p-2.5 bg-white/90 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-xs font-medium text-slate-800 flex items-center gap-2">
+            <span className="text-lg">🔄</span>
+            <div>
+              <span className="font-extrabold text-slate-900">{sequenceAgent.name}'s Directive:</span> "{sequenceAgent.quote}"
+            </div>
+          </div>
         </div>
 
         <button
@@ -126,8 +158,18 @@ export const FollowUpSequencer: React.FC<FollowUpSequencerProps> = ({
           className="cartoon-button-primary px-5 py-3 text-xs sm:text-sm flex items-center gap-2"
         >
           <Play className={`w-4 h-4 ${isSimulating ? 'animate-spin' : ''}`} />
-          <span>{isSimulating ? 'Sending Sequence...' : '▶️ Run Live Drip Campaign'}</span>
+          <span>{isSimulating ? `${sequenceAgent.name} Sending Sequence...` : `▶️ Run Live Drip Campaign (${sequenceAgent.name})`}</span>
         </button>
+      </div>
+
+      {/* Pam's Live Agent Terminal Ticker */}
+      <div className="cartoon-card p-3 bg-slate-900 text-white border-2 border-slate-900 rounded-xl font-mono text-xs flex items-center gap-3">
+        <span className="text-xs font-bold px-2 py-0.5 bg-purple-400 text-slate-900 rounded border border-slate-900 shrink-0">
+          🔄 {sequenceAgent.name.toUpperCase()} LIVE LOG
+        </span>
+        <div className="truncate text-emerald-400 font-bold">
+          &gt; {agentLiveLog[0]}
+        </div>
       </div>
 
       {/* Target Prospect Info Bar */}

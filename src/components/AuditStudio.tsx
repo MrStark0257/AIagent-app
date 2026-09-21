@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { runWebsiteAudit, type WebsiteAuditReport } from '../services/websiteAuditor';
+import { runLiveWebsiteAudit, runWebsiteAudit, type WebsiteAuditReport } from '../services/websiteAuditor';
 import type { Lead } from '../services/leadScraper';
-import { Sparkles, Download, Gauge, Globe, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Sparkles, Download, Gauge, Globe, CheckCircle2, ArrowRight, UserCheck } from 'lucide-react';
+import { CHARACTERS } from '../data/characters';
 import { cartoonAudio } from '../utils/audio';
 import confetti from 'canvas-confetti';
 
@@ -17,24 +18,47 @@ export const AuditStudio: React.FC<AuditStudioProps> = ({
   onAddToCRM,
 }) => {
   const [targetUrl, setTargetUrl] = useState<string>(selectedLead ? selectedLead.website : 'https://apexdentalcare.com');
-  const [auditReport, setAuditReport] = useState<WebsiteAuditReport>(() =>
-    runWebsiteAudit(selectedLead ? selectedLead.website : 'https://apexdentalcare.com', selectedLead?.companyName)
-  );
+  const [auditReport, setAuditReport] = useState<WebsiteAuditReport>(() => {
+    try {
+      const saved = localStorage.getItem('ai_agency_latest_audit');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return runWebsiteAudit(selectedLead ? selectedLead.website : 'https://apexdentalcare.com', selectedLead?.companyName);
+  });
   const [isAuditing, setIsAuditing] = useState<boolean>(false);
 
-  const handleRunAudit = (e: React.FormEvent) => {
+  // Research Agent Operator (Dwight)
+  const auditAgent = CHARACTERS.find(c => c.id === 'dwight' || c.title.includes('Research')) || CHARACTERS[3];
+
+  const [agentLiveLog, setAgentLiveLog] = useState<string[]>([
+    `🔎 [Research Agent ${auditAgent.name}] Loaded live HTTP DOM crawler & 5-dimension technical audit engine.`,
+    `📊 [Research Agent ${auditAgent.name}] Ready to audit target URLs for SEO, speed, security & CRO revenue leaks in real-time.`
+  ]);
+
+  const handleRunAudit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetUrl.trim()) return;
 
     cartoonAudio.playSuccess();
     setIsAuditing(true);
+    setAgentLiveLog(prev => [
+      `🔎 [Research Agent ${auditAgent.name}] Initiating live real-time network crawl of "${targetUrl}"...`,
+      ...prev.slice(0, 4)
+    ]);
 
-    setTimeout(() => {
-      const report = runWebsiteAudit(targetUrl, selectedLead?.companyName);
+    try {
+      const report = await runLiveWebsiteAudit(targetUrl, selectedLead?.companyName);
       setAuditReport(report);
-      setIsAuditing(false);
+      setAgentLiveLog(prev => [
+        `✅ [Research Agent ${auditAgent.name}] Real-time audit completed for "${targetUrl}"! Score: ${report.overallScore}/100, Latency: ${report.loadTimeSeconds}s, Est Loss: ${report.estMonthlyRevenueLoss}`,
+        ...prev.slice(0, 4)
+      ]);
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
-    }, 1200);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setIsAuditing(false);
+    }
   };
 
   const handleDownloadReport = () => {
@@ -53,21 +77,36 @@ export const AuditStudio: React.FC<AuditStudioProps> = ({
   return (
     <div className="w-full space-y-6">
       
-      {/* Top Banner */}
-      <div className="cartoon-card p-6 bg-gradient-to-r from-emerald-100 via-sky-100 to-amber-100 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="cartoon-badge px-2.5 py-0.5 text-xs bg-emerald-400 text-slate-900 rounded-full flex items-center gap-1 font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-800" /> Module 2: AI Website Auditor
+      {/* Top Banner - Powered by Research Agent Dwight */}
+      <div className="cartoon-card p-6 bg-gradient-to-r from-emerald-100 via-sky-100 to-amber-100 flex flex-wrap items-center justify-between gap-4 border-4 border-slate-900 shadow-[6px_6px_0px_#0f172a] rounded-2xl">
+        <div className="space-y-2 max-w-2xl">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="cartoon-badge px-3 py-1 text-xs bg-emerald-400 text-slate-900 rounded-full flex items-center gap-1.5 font-extrabold border border-slate-900 shadow-[1.5px_1.5px_0px_#0f172a]">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-950" /> Module 2: AI Website Auditor
             </span>
-            <span className="text-xs font-mono font-bold text-slate-700">Lighthouse • SEO • Security • CRO</span>
+
+            {/* Research Agent Identity Badge */}
+            <span className="px-3 py-1 text-xs bg-white text-slate-900 font-extrabold rounded-full border-2 border-slate-900 flex items-center gap-1.5 shadow-[1.5px_1.5px_0px_#0f172a]">
+              <UserCheck className="w-3.5 h-3.5 text-yellow-600" />
+              <span>OPERATED BY: {auditAgent.name} ({auditAgent.title})</span>
+            </span>
+
+            <span className="text-xs font-mono font-bold bg-slate-900 text-amber-300 px-2.5 py-1 rounded-full">
+              Lighthouse • SEO • Security • CRO
+            </span>
           </div>
+
           <h2 className="font-heading text-2xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
             AI Website Audit Studio 🔍
           </h2>
-          <p className="text-xs md:text-sm text-slate-700 font-medium mt-1">
-            Run automated 5-dimension audits on prospect websites. Calculate revenue loss and generate 1-click reports!
-          </p>
+
+          {/* Dwight's Directive & Work Spec */}
+          <div className="p-2.5 bg-white/90 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] text-xs font-medium text-slate-800 flex items-center gap-2">
+            <span className="text-lg">🔎</span>
+            <div>
+              <span className="font-extrabold text-slate-900">{auditAgent.name}'s Directive:</span> "{auditAgent.quote}"
+            </div>
+          </div>
         </div>
 
         <button
@@ -79,8 +118,18 @@ export const AuditStudio: React.FC<AuditStudioProps> = ({
         </button>
       </div>
 
+      {/* Dwight's Live Agent Terminal Ticker */}
+      <div className="cartoon-card p-3 bg-slate-900 text-white border-2 border-slate-900 rounded-xl font-mono text-xs flex items-center gap-3">
+        <span className="text-xs font-bold px-2 py-0.5 bg-yellow-400 text-slate-900 rounded border border-slate-900 shrink-0">
+          🔎 {auditAgent.name.toUpperCase()} LIVE LOG
+        </span>
+        <div className="truncate text-emerald-400 font-bold">
+          &gt; {agentLiveLog[0]}
+        </div>
+      </div>
+
       {/* URL Scanner Input Form */}
-      <form onSubmit={handleRunAudit} className="cartoon-card p-4 bg-white flex items-center gap-3">
+      <form onSubmit={handleRunAudit} className="cartoon-card p-4 bg-white flex items-center gap-3 border-3 border-slate-900 rounded-2xl shadow-[4px_4px_0px_#0f172a]">
         <Globe className="w-5 h-5 text-emerald-600 shrink-0 ml-1" />
         <input
           type="text"
@@ -95,7 +144,7 @@ export const AuditStudio: React.FC<AuditStudioProps> = ({
           className="cartoon-button-secondary px-5 py-2.5 text-xs sm:text-sm flex items-center gap-2 shrink-0"
         >
           <Gauge className={`w-4 h-4 ${isAuditing ? 'animate-spin' : ''}`} />
-          <span>{isAuditing ? 'Auditing Site...' : 'Run AI Audit Scan'}</span>
+          <span>{isAuditing ? `${auditAgent.name} is Auditing Site...` : `Run AI Audit Scan (${auditAgent.name})`}</span>
         </button>
       </form>
 
@@ -103,7 +152,19 @@ export const AuditStudio: React.FC<AuditStudioProps> = ({
       <div className="cartoon-card bg-slate-900 text-white p-6 relative overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-700">
           <div>
-            <span className="text-xs font-mono text-amber-400 font-bold uppercase">AUDIT SCORECARD FOR:</span>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-mono text-amber-400 font-bold uppercase">AUDIT SCORECARD FOR:</span>
+              {auditReport.isLiveRealTime ? (
+                <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-slate-900 font-mono text-[9px] font-black border border-emerald-300 flex items-center gap-1 shadow-[1px_1px_0px_#0f172a]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-950 animate-ping" />
+                  <span>🟢 REAL-TIME LIVE AUDIT ({auditReport.loadTimeSeconds}s)</span>
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 font-mono text-[9px] font-bold">
+                  Baseline Profile
+                </span>
+              )}
+            </div>
             <h3 className="font-heading text-2xl md:text-3xl font-extrabold text-white">
               {auditReport.companyName} <span className="text-xs font-mono text-slate-400">({auditReport.targetUrl})</span>
             </h3>

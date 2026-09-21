@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { INITIAL_LEADS, type Lead, scrapeLiveLeadsWithGemini } from '../services/leadScraper';
+import { type Lead, scrapeLiveLeadsWithGemini, getStoredLeads, saveStoredLeads } from '../services/leadScraper';
 import { CHARACTERS } from '../data/characters';
-import { Search, Sparkles, Filter, Mail, Phone, ExternalLink, Flame, UserCheck, Play, Pause, MapPin } from 'lucide-react';
+import { Search, Sparkles, Filter, Mail, Phone, ExternalLink, Flame, UserCheck, Play, Pause, MapPin, Database } from 'lucide-react';
 import { cartoonAudio } from '../utils/audio';
 import confetti from 'canvas-confetti';
 
@@ -20,12 +20,17 @@ export const LeadHunter: React.FC<LeadHunterProps> = ({
   isAutoHunting = false,
   onToggleAutoHunting,
 }) => {
-  const [leads, setLeads] = useState<Lead[]>(INITIAL_LEADS);
+  const [leads, setLeads] = useState<Lead[]>(getStoredLeads);
   const [selectedNiche, setSelectedNiche] = useState<string>('All');
   const [searchLocation, setSearchLocation] = useState<string>('Austin, TX');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [isScraping, setIsScraping] = useState<boolean>(false);
   const [addedLeadIds, setAddedLeadIds] = useState<{ [key: string]: boolean }>({});
+
+  // Sync leads to persistent local storage on changes
+  useEffect(() => {
+    saveStoredLeads(leads);
+  }, [leads]);
 
   // Lead / BizDev Agent Operator (Jim)
   const leadAgent = CHARACTERS.find(c => c.id === 'jim' || c.title.includes('BizDev') || c.title.includes('Lead')) || CHARACTERS[2];
@@ -131,6 +136,11 @@ export const LeadHunter: React.FC<LeadHunterProps> = ({
 
             <span className="text-xs font-mono font-bold bg-slate-900 text-amber-300 px-2.5 py-1 rounded-full">
               {leads.length} Verified Prospects
+            </span>
+
+            <span className="px-2.5 py-1 text-[11px] bg-emerald-100 text-emerald-900 font-extrabold rounded-full border border-slate-900 flex items-center gap-1 shadow-[1px_1px_0px_#0f172a]">
+              <Database className="w-3 h-3 text-emerald-700" />
+              <span>Real-Time Sync Active</span>
             </span>
           </div>
 
